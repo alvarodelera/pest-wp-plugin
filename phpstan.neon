@@ -26,6 +26,16 @@ parameters:
         - message: '#Trait PestWP\\Concerns\\InteractsWithDatabase is used zero times and is not analysed\.#'
           path: src/Concerns/InteractsWithDatabase.php
 
+        # Custom expectations use $this in closures (bound by Pest at runtime)
+        - message: '#Undefined variable: \$this#'
+          path: src/Expectations.php
+        - message: '#Call to method .+ of internal class Pest\\Mixins\\Expectation<TValue> from outside its root namespace Pest\.#'
+          path: src/Expectations.php
+        - message: '#Call to an undefined method Pest\\PendingCalls\\TestCall\|Pest\\Support\\HigherOrderTapProxy::fail\(\)\.#'
+          path: src/Expectations.php
+        - message: '#Part \$\w+ \(mixed\) of encapsed string cannot be cast to string\.#'
+          path: src/Expectations.php
+
     # Strictness
     reportUnmatchedIgnoredErrors: true
     treatPhpDocTypesAsCertain: false

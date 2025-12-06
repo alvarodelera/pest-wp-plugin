@@ -235,6 +235,121 @@ it('can switch between users', function () {
 });
 ```
 
+## Custom WordPress Expectations
+
+PestWP extends Pest's expectation API with WordPress-specific assertions for more readable and expressive tests.
+
+### Post Status Expectations
+
+Check post statuses with intuitive methods:
+
+```php
+use function PestWP\createPost;
+
+it('can check post statuses', function () {
+    $published = createPost(['post_status' => 'publish']);
+    $draft = createPost(['post_status' => 'draft']);
+    
+    expect($published)->toBePublished();
+    expect($draft)->toBeDraft();
+});
+```
+
+Available status expectations:
+- `toBePublished()` - Post is published
+- `toBeDraft()` - Post is draft
+- `toBePending()` - Post is pending review
+- `toBePrivate()` - Post is private
+- `toBeInTrash()` - Post is in trash
+
+### WP_Error Expectations
+
+Test WordPress errors elegantly:
+
+```php
+it('can test WP_Error objects', function () {
+    $error = new WP_Error('invalid_data', 'Invalid input');
+    
+    expect($error)
+        ->toBeWPError()
+        ->toHaveErrorCode('invalid_data');
+});
+```
+
+### Metadata Expectations
+
+Test post and user metadata:
+
+```php
+use function PestWP\createPost;
+use function PestWP\createUser;
+
+it('can check post metadata', function () {
+    $post = createPost();
+    update_post_meta($post->ID, 'price', 99);
+    
+    expect($post)
+        ->toHaveMeta('price', 99)
+        ->toHaveMetaKey('price');
+});
+
+it('can check user metadata', function () {
+    $user = createUser();
+    update_user_meta($user->ID, 'favorite_color', 'blue');
+    
+    expect($user)
+        ->toHaveUserMeta('favorite_color', 'blue')
+        ->toHaveMetaKey('favorite_color');
+});
+```
+
+### Hook Expectations
+
+Test action and filter registrations:
+
+```php
+it('can verify hooks are registered', function () {
+    $callback = function() { echo 'test'; };
+    
+    add_action('init', $callback, 10);
+    add_filter('the_content', $callback, 15);
+    
+    expect('init')->toHaveAction($callback, 10);
+    expect('the_content')->toHaveFilter($callback, 15);
+});
+```
+
+### Term Expectations
+
+Test taxonomy term assignments:
+
+```php
+it('can check post terms', function () {
+    $post = createPost();
+    $termId = wp_insert_term('Technology', 'category');
+    wp_set_post_terms($post->ID, [$termId['term_id']], 'category');
+    
+    expect($post)->toHaveTerm('Technology', 'category');
+});
+```
+
+### Chaining Expectations
+
+All custom expectations support chaining:
+
+```php
+it('can chain multiple expectations', function () {
+    $post = createPost(['post_status' => 'publish']);
+    update_post_meta($post->ID, 'featured', true);
+    
+    expect($post)
+        ->toBePublished()
+        ->toHaveMeta('featured', true)
+        ->and($post->post_title)->toBeString()
+        ->and($post->ID)->toBeInt();
+});
+```
+
 ## Database Isolation
 
 Every test automatically runs in an isolated database transaction. Changes are rolled back after each test:
