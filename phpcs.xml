@@ -5,6 +5,11 @@
     <!-- Use PSR-12 as base -->
     <rule ref="PSR12"/>
 
+    <!-- Exclude: The file-level docblock must follow the opening PHP tag in the file header -->
+    <rule ref="PSR12.Files.FileHeader">
+        <exclude name="PSR12.Files.FileHeader.IncorrectOrder"/>
+    </rule>
+
     <!-- Paths to check -->
     <file>src</file>
     <file>tests</file>
@@ -22,3 +27,4 @@
         </properties>
     </rule>
 </ruleset>
+The file-level docblock must follow the opening PHP tag in the file header

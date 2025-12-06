@@ -463,6 +463,77 @@ export WP_ADMIN_USER=admin
 export WP_ADMIN_PASSWORD=password
 ```
 
+### WP Admin Locators
+
+PestWP provides helper functions for building URLs and CSS selectors for WordPress admin UI elements. These locators are designed to be resilient across WordPress versions (6.5+).
+
+#### URL Helpers
+
+```php
+use function PestWP\Functions\adminUrl;
+use function PestWP\Functions\loginUrl;
+use function PestWP\Functions\newPostUrl;
+use function PestWP\Functions\editPostUrl;
+use function PestWP\Functions\postsListUrl;
+
+// Build admin URLs
+loginUrl();                    // http://localhost:8080/wp-login.php
+adminUrl();                    // http://localhost:8080/wp-admin/
+adminUrl('edit.php');          // http://localhost:8080/wp-admin/edit.php
+adminUrl('my-plugin');         // http://localhost:8080/wp-admin/admin.php?page=my-plugin
+
+// Post URLs
+newPostUrl();                  // New post
+newPostUrl('page');            // New page
+editPostUrl(123);              // Edit post ID 123
+postsListUrl('post', 'draft'); // List drafts
+```
+
+#### Gutenberg Selectors
+
+```php
+use function PestWP\Functions\postTitleSelector;
+use function PestWP\Functions\publishButtonSelector;
+use function PestWP\Functions\blockSelector;
+use function PestWP\Functions\editorNoticeSelector;
+
+it('can create a post using locators', function () {
+    $this->browse(function ($browser) {
+        $browser->visit(newPostUrl())
+            ->waitFor(postTitleSelector())
+            ->type(postTitleSelector(), 'My Post')
+            ->click(publishButtonSelector())
+            ->waitFor(editorNoticeSelector())
+            ->assertSee('Post published');
+    });
+});
+
+// Target specific blocks
+blockSelector('core/paragraph');  // [data-type='core/paragraph']
+blockSelector('core/heading');    // [data-type='core/heading']
+```
+
+#### Admin UI Selectors
+
+```php
+use function PestWP\Functions\menuSelector;
+use function PestWP\Functions\noticeSelector;
+use function PestWP\Functions\tableRowSelector;
+use function PestWP\Functions\buttonSelector;
+
+// Menu navigation
+menuSelector('Posts');           // Admin menu item
+submenuSelector('Settings', 'General'); // Submenu item
+
+// Notices
+noticeSelector('success');       // Success notices
+noticeSelector('error');         // Error notices
+
+// Data tables
+tableRowSelector('My Post');     // Row by title
+rowActionSelector('edit');       // Row action link
+```
+
 For complete browser testing documentation, see [docs/BROWSER_TESTING.md](docs/BROWSER_TESTING.md).
 
 ## Configuration

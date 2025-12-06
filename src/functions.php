@@ -14,6 +14,7 @@ require_once __DIR__ . '/Functions/helpers.php';
 require_once __DIR__ . '/Functions/factories.php';
 require_once __DIR__ . '/Functions/auth.php';
 require_once __DIR__ . '/Functions/browser.php';
+require_once __DIR__ . '/Functions/locators.php';
 
 // Load expectation categories
 require_once __DIR__ . '/Expectations/posts.php';

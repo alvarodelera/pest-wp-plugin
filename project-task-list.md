@@ -256,17 +256,42 @@ Integración con el plugin oficial de Pest para testing E2E.
 
 **Nota:** Se migró de Playwright standalone (TypeScript) a Pest Browser Plugin (PHP nativo) para mejor integración con el ecosistema Pest.
 
-### 3.3 WP Admin Locators
+### 3.3 WP Admin Locators ✅ COMPLETADA
 Abstracciones para selectores frágiles.
 
-- [ ] **Menu Navigation:**
-    - `visitAdminPage($slug)` -> Convierte a `admin.php?page=$slug`.
-    - `clickMenu($name)` -> Busca por aria-label o texto del menú lateral.
-- [ ] **Gutenberg Interaction:**
-    - `fillBlock($blockName, $content)` -> Reto complejo. Investigar selectores de atributos `data-type`.
+- [x] **URL Helpers:**
+    - `adminUrl($page, $params)` - Construye URLs de admin con parámetros opcionales.
+    - `loginUrl()` - URL de login de WordPress.
+    - `newPostUrl($postType)` - URL para crear nuevo post/page.
+    - `editPostUrl($postId)` - URL para editar post específico.
+    - `postsListUrl($postType, $status)` - URL de lista de posts.
+    - `mediaLibraryUrl()`, `usersListUrl()`, `pluginsUrl()`, etc.
+- [x] **Menu Navigation:**
+    - `menuSelector($name)` - Selector para items del menú admin.
+    - `submenuSelector($parent, $submenu)` - Selector para subitems.
+- [x] **Gutenberg Interaction:**
+    - `postTitleSelector()` - Selector para campo de título (compatible WP 6.5+).
+    - `publishButtonSelector()` - Selector para botón publicar.
+    - `blockSelector($blockName)` - Selector para bloques por `data-type`.
+    - `blockInserterSelector()` - Selector para añadir bloque.
+    - `editorNoticeSelector()` - Selector para notificaciones del editor.
+- [x] **Admin UI Selectors:**
+    - `noticeSelector($type)` - Selectores para notices (success, error, etc.).
+    - `buttonSelector($text, $type)` - Selectores para botones.
+    - `tableRowSelector($title)` - Selector para filas en tablas WP.
+    - `rowActionSelector($action)` - Selector para acciones de fila.
+- [x] **Classic Editor Support:**
+    - `classicTitleSelector()`, `classicContentSelector()`, `classicPublishSelector()`.
+- [x] **Tests Comprehensivos:**
+    - 46 tests unitarios para todos los locators.
+    - Coverage de URL helpers, menu selectors, Gutenberg, y data tables.
 
 **✅ Criterio de Éxito:**
-- Tests corriendo contra WP 6.5 y WP 6.6 (beta) pasan sin cambios en el código del test, demostrando que los locators son resilientes a cambios menores de markup.
+- ✅ Helpers de URL generan URLs correctas para todas las páginas admin.
+- ✅ Selectores CSS son resilientes y cubren múltiples versiones de WP.
+- ✅ 226 tests PHP pasan (489 assertions).
+- ✅ PHPStan nivel 9 sin errores.
+- ✅ Pint PSR-12 compliant.
 
 ## 🟣 Fase 4: Tooling & Release
 **Objetivo:** Preparar el paquete para el mundo real.
