@@ -34,7 +34,7 @@
 
     // Intelephense - include stubs and scan vendor for Pest
     "intelephense.environment.includePaths": [
-        "vendor/pestphp/pest/src/Functions.php",
+        "vendor/pestphp/pest/src",
         "vendor/rector/rector"
     ],
     "intelephense.files.exclude": [

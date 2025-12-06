@@ -111,18 +111,29 @@ Integración nativa con el ecosistema Pest.
 - ✅ Los tests de integración corren sin configuración manual extra.
 - ✅ 42 tests pasan, PHPStan nivel 9 sin errores, Pint sin issues.
 
-### 2.2 Factories Wrapper (Tipado Fuerte)
+### 2.2 Factories Wrapper (Tipado Fuerte) ✅ COMPLETADA
 Mejorar las factorías de WP para que sean amigables con el IDE.
 
-- [ ] **`create_post()`:** Wrapper de `static::factory()->post->create_and_get()`.
-    - Debe tener PHPDoc `@return \WP_Post`.
-- [ ] **`create_user()`:** Wrapper de `static::factory()->user->create_and_get()`.
-    - Debe permitir pasar roles como string simple: `create_user('editor')`.
-- [ ] **`create_term()` / `create_attachment()`:** Implementaciones similares.
+- [x] **`createPost()`:** Wrapper de WordPress post creation.
+    - Tiene PHPDoc `@return \WP_Post`.
+    - Acepta argumentos personalizados o usa valores por defecto sensibles.
+    - Lanza excepciones descriptivas en caso de error.
+- [x] **`createUser()`:** Wrapper de WordPress user creation.
+    - Permite pasar roles como string simple: `createUser('editor')`.
+    - También acepta array completo de argumentos.
+    - Retorna `\WP_User` con tipado fuerte.
+- [x] **`createTerm()`:** Wrapper de WordPress term creation.
+    - Retorna el term ID como int.
+    - Acepta nombre, taxonomía y argumentos adicionales.
+- [x] **`createAttachment()`:** Wrapper de WordPress attachment creation.
+    - Crea imagen dummy automáticamente si no se proporciona archivo.
+    - Retorna attachment ID como int.
+    - Genera metadata de imagen automáticamente.
 
 **✅ Criterio de Éxito:**
-- En el IDE (VS Code / PhpStorm), al escribir `create_post()->`, el autocompletado sugiere propiedades como `post_title` o `ID`.
-- PHPStan (Meta-testing) no se queja de tipos desconocidos al usar estos helpers.
+- ✅ En el IDE (VS Code / PhpStorm), al escribir `createPost()->`, el autocompletado sugiere propiedades como `post_title` o `ID`.
+- ✅ PHPStan nivel 9 no se queja de tipos desconocidos al usar estos helpers.
+- ✅ 61 tests pasan (129 assertions), incluyendo 19 tests específicos para factory helpers.
 
 ### 2.3 Auth Helpers
 Simplificar la autenticación en tests.
