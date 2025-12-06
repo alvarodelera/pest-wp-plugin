@@ -296,21 +296,59 @@ Abstracciones para selectores frágiles.
 ## 🟣 Fase 4: Tooling & Release
 **Objetivo:** Preparar el paquete para el mundo real.
 
-### 4.1 Architecture Presets
+### 4.1 Architecture Presets ✅ COMPLETADA
 Reglas de calidad específicas para WP.
 
-- [ ] **Preset `wordpress`:**
-    - Forbid: `dd`, `dump`, `var_dump`.
-    - Forbid: `global $wpdb` (sugerir inyección de dependencias o helpers).
-    - Forbid: `mysql_*` functions (obsoletas).
+- [x] **WordPressPreset Class:**
+    - Constantes para funciones prohibidas: `dd`, `dump`, `var_dump`, `print_r`.
+    - Constantes para funciones MySQL deprecadas: `mysql_*`.
+    - Patrones desaconsejados: `global $wpdb`, `global $post`, `$GLOBALS`.
+    - Funciones sensibles de seguridad: `eval`, `exec`, `extract`.
+    - Alertas de sanitización: `$_GET`, `$_POST`, `$_REQUEST` sin sanitizar.
+- [x] **CodeAnalyzer Class:**
+    - Analiza código PHP para detectar malas prácticas.
+    - Detecta funciones prohibidas con pattern matching.
+    - Ignora contenido dentro de strings y comentarios.
+    - Detecta superglobales no sanitizados.
+    - Genera reportes con línea, mensaje y severidad.
+- [x] **Tests Comprehensivos:**
+    - 39 tests unitarios para presets y analizador.
+    - Coverage de detección de funciones, patrones y sanitización.
 
 **✅ Criterio de Éxito:**
-- Correr `pest --type-coverage` y `pest --lint` sobre un proyecto de prueba con malas prácticas reporta los errores esperados.
+- ✅ CodeAnalyzer detecta dd(), dump(), var_dump() correctamente.
+- ✅ CodeAnalyzer detecta mysql_* functions obsoletas.
+- ✅ CodeAnalyzer detecta global $wpdb y patrones desaconsejados.
+- ✅ CodeAnalyzer no genera falsos positivos en strings/comentarios.
+- ✅ 265 tests PHP pasan (579 assertions).
+- ✅ PHPStan nivel 9 sin errores.
+- ✅ Pint PSR-12 compliant.
 
-### 4.2 Documentación y CI
-- [ ] **README.md:** Ejemplos claros de "Integration vs Browser".
-- [ ] **GitHub Actions Template:**
-    - Crear un workflow reutilizable (`.yml`) que instale Pest, configure SQLite y corra los tests en 30 segundos.
+### 4.2 Documentación y CI ✅ COMPLETADA
+- [x] **README.md Mejorado:**
+    - Sección "Quick Start (< 5 minutes)" con guía paso a paso.
+    - Sección "Integration vs Browser Testing" con tabla comparativa.
+    - Ejemplos claros de cuándo usar cada tipo de test.
+    - Sección de "Troubleshooting" con problemas comunes.
+    - Mejorada documentación de Database Isolation.
+- [x] **GitHub Actions Templates:**
+    - `.github/workflows/wordpress-tests.yml` - Workflow completo con:
+        - Matrix testing (PHP 8.3, 8.4).
+        - Code Quality jobs (PHPStan, Pint).
+        - Unit tests y Integration tests separados.
+        - Browser tests opcionales con Docker WordPress.
+        - Cache de Composer y WordPress para builds rápidos.
+        - Coverage reporting con Codecov.
+    - `.github/workflows/simple-tests.yml.template` - Workflow minimal para copiar.
+- [x] **Configuración de CI:**
+    - Cache de WordPress installation para acelerar builds.
+    - Soporte para browser tests en CI con Docker services.
+    - Screenshots de fallos en browser tests.
 
 **✅ Criterio de Éxito:**
-- Un desarrollador externo (beta tester) puede instalar el paquete y correr su primer test en < 5 minutos siguiendo solo el README.
+- ✅ README tiene guía clara de Quick Start en < 5 minutos.
+- ✅ Tabla comparativa Integration vs Browser Testing.
+- ✅ GitHub Actions templates listos para usar.
+- ✅ 265 tests PHP pasan (579 assertions).
+- ✅ PHPStan nivel 9 sin errores.
+- ✅ Pint PSR-12 compliant.

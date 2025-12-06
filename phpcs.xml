@@ -27,4 +27,3 @@
         </properties>
     </rule>
 </ruleset>
-The file-level docblock must follow the opening PHP tag in the file header

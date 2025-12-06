@@ -1,0 +1,296 @@
+# ============================================================================
+# PestWP - GitHub Actions Workflow for WordPress Testing
+# ============================================================================
+# This is a TEMPLATE workflow that can be used in any WordPress plugin/theme.
+# Copy this file to your project's .github/workflows/ directory.
+#
+# Features:
+# - Matrix testing across PHP versions (8.3, 8.4)
+# - Automatic WordPress + SQLite setup
+# - Code quality checks (PHPStan, Pint)
+# - Browser testing support with Pest Browser Plugin
+# - Coverage reporting
+# ============================================================================
+
+name: WordPress Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  # WordPress settings for browser tests (optional)
+  WP_BASE_URL: "http://localhost:8080"
+  WP_ADMIN_USER: "admin"
+  WP_ADMIN_PASSWORD: "password"
+
+jobs:
+  # ==========================================================================
+  # Code Quality Checks
+  # ==========================================================================
+  quality:
+    name: "Code Quality"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, json, libxml, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --memory-limit=512M
+
+      - name: Run Pint (Code Style)
+        run: vendor/bin/pint --test
+
+  # ==========================================================================
+  # Unit Tests (No WordPress)
+  # ==========================================================================
+  unit-tests:
+    name: "Unit Tests - PHP ${{ matrix.php }}"
+    runs-on: ubuntu-latest
+    needs: quality
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["8.3", "8.4"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, json, libxml, zip
+          coverage: pcov
+          tools: composer:v2
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Run Unit Tests
+        run: vendor/bin/pest tests/Unit --coverage --coverage-clover=coverage-unit.xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: matrix.php == '8.3'
+        with:
+          files: coverage-unit.xml
+          flags: unit-tests
+          fail_ci_if_error: false
+
+  # ==========================================================================
+  # Integration Tests (With WordPress + SQLite)
+  # ==========================================================================
+  integration-tests:
+    name: "Integration Tests - PHP ${{ matrix.php }}"
+    runs-on: ubuntu-latest
+    needs: quality
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["8.3", "8.4"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, json, libxml, zip
+          coverage: pcov
+          tools: composer:v2
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      # Cache WordPress installation to speed up subsequent runs
+      - name: Cache WordPress
+        uses: actions/cache@v4
+        with:
+          path: .pest/wordpress
+          key: wordpress-${{ hashFiles('src/Installer/*.php') }}
+          restore-keys: wordpress-
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Run Integration Tests
+        run: vendor/bin/pest tests/Integration --coverage --coverage-clover=coverage-integration.xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: matrix.php == '8.3'
+        with:
+          files: coverage-integration.xml
+          flags: integration-tests
+          fail_ci_if_error: false
+
+  # ==========================================================================
+  # Browser Tests (E2E with Pest Browser Plugin)
+  # ==========================================================================
+  browser-tests:
+    name: "Browser Tests"
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests]
+    if: ${{ contains(github.event.head_commit.message, '[browser]') || github.event_name == 'schedule' }}
+
+    services:
+      # Use wp-env or a containerized WordPress for browser tests
+      wordpress:
+        image: wordpress:latest
+        ports:
+          - 8080:80
+        env:
+          WORDPRESS_DB_HOST: mysql
+          WORDPRESS_DB_USER: root
+          WORDPRESS_DB_PASSWORD: password
+          WORDPRESS_DB_NAME: wordpress
+
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: wordpress
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, json, libxml, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      # Wait for WordPress to be ready
+      - name: Wait for WordPress
+        run: |
+          echo "Waiting for WordPress..."
+          timeout 60 bash -c 'until curl -s http://localhost:8080 > /dev/null; do sleep 2; done'
+          echo "WordPress is ready!"
+
+      # Install WordPress (CLI)
+      - name: Setup WordPress
+        run: |
+          # Install WP-CLI
+          curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+          chmod +x wp-cli.phar
+
+          # Configure WordPress
+          ./wp-cli.phar core install \
+            --url="http://localhost:8080" \
+            --title="Test Site" \
+            --admin_user="$WP_ADMIN_USER" \
+            --admin_password="$WP_ADMIN_PASSWORD" \
+            --admin_email="admin@example.com" \
+            --skip-email \
+            --path=/var/www/html \
+            --allow-root || true
+
+      # Install browser dependencies
+      - name: Install Playwright browsers
+        run: vendor/bin/pest --browser-install
+
+      # Configure browser tests
+      - name: Configure browser tests
+        run: vendor/bin/pest-setup-browser --url "$WP_BASE_URL" --user "$WP_ADMIN_USER" --pass "$WP_ADMIN_PASSWORD"
+
+      - name: Run Browser Tests
+        run: vendor/bin/pest --browser tests/Browser/
+
+      # Upload screenshots on failure
+      - name: Upload Screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-screenshots
+          path: tests/Browser/screenshots/
+          retention-days: 7
+
+  # ==========================================================================
+  # All Tests Passed
+  # ==========================================================================
+  tests-passed:
+    name: "All Tests Passed"
+    runs-on: ubuntu-latest
+    needs: [quality, unit-tests, integration-tests]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          if [[ "${{ needs.quality.result }}" != "success" ]] || \
+             [[ "${{ needs.unit-tests.result }}" != "success" ]] || \
+             [[ "${{ needs.integration-tests.result }}" != "success" ]]; then
+            echo "Some tests failed"
+            exit 1
+          fi
+          echo "All tests passed successfully!"

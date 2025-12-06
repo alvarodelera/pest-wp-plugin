@@ -26,11 +26,66 @@ A modern testing plugin for WordPress using Pest PHP with SQLite database suppor
 composer require --dev pestwp/pest-wp-plugin
 ```
 
-## Quick Start
+## Quick Start (< 5 minutes)
 
-The plugin automatically bootstraps WordPress with SQLite when you run Pest tests. No manual configuration needed!
+Get your first WordPress test running in under 5 minutes:
 
-### Basic Test
+### 1. Add PestWP to your project
+
+```bash
+composer require --dev pestwp/pest-wp-plugin
+```
+
+### 2. Create your first test
+
+```php
+<?php
+// tests/Integration/MyPluginTest.php
+
+use function PestWP\createPost;
+use function PestWP\createUser;
+
+it('can create posts', function () {
+    $post = createPost(['post_title' => 'Hello World']);
+    
+    expect($post)->toBeInstanceOf(WP_Post::class)
+        ->and($post->post_title)->toBe('Hello World');
+});
+
+it('can test user permissions', function () {
+    $editor = createUser('editor');
+    loginAs($editor);
+    
+    expect(current_user_can('edit_posts'))->toBeTrue()
+        ->and(current_user_can('manage_options'))->toBeFalse();
+});
+```
+
+### 3. Configure Pest
+
+```php
+<?php
+// tests/Pest.php
+
+use PestWP\Concerns\InteractsWithDatabase;
+
+// Enable database isolation for integration tests
+uses(InteractsWithDatabase::class)->in('Integration');
+```
+
+### 4. Run your tests
+
+```bash
+./vendor/bin/pest
+```
+
+That's it! PestWP automatically:
+- Downloads WordPress to `.pest/wordpress/`
+- Sets up SQLite database (no MySQL needed)
+- Isolates each test with database snapshots
+- Provides type-safe factories and helpers
+
+### Basic Test Example
 
 ```php
 <?php
@@ -53,6 +108,66 @@ it('can create users with different roles', function () {
     $editor = createUser('editor');
     
     expect($editor->roles)->toContain('editor');
+});
+```
+
+## Integration vs Browser Testing
+
+PestWP supports two types of testing. Choose the right one for your needs:
+
+| Feature | Integration Tests | Browser Tests |
+|---------|------------------|---------------|
+| **Speed** | ⚡ Very fast (~2ms/test) | 🐢 Slower (~500ms/test) |
+| **Database** | SQLite (automatic) | MySQL (requires setup) |
+| **UI Testing** | ❌ No | ✅ Yes (full browser) |
+| **JavaScript** | ❌ No | ✅ Yes |
+| **Setup** | Zero config | Requires WordPress server |
+| **Best For** | Hooks, filters, CRUD, permissions | Admin UI, Gutenberg, forms |
+
+### When to Use Integration Tests
+
+Use integration tests for:
+- Testing WordPress hooks and filters
+- CRUD operations (posts, users, terms, options)
+- User permissions and capabilities
+- Custom post types and taxonomies
+- Database queries and metadata
+
+```php
+// tests/Integration/MyPluginTest.php
+it('registers custom post type', function () {
+    do_action('init');
+    expect(post_type_exists('my_cpt'))->toBeTrue();
+});
+
+it('filters content correctly', function () {
+    $result = apply_filters('the_content', 'Hello');
+    expect($result)->toContain('Modified by my plugin');
+});
+```
+
+### When to Use Browser Tests
+
+Use browser tests for:
+- Admin UI workflows
+- Gutenberg editor interactions
+- JavaScript functionality
+- Form submissions
+- Visual regression testing
+
+```php
+// tests/Browser/AdminTest.php
+it('can create post from admin', function () {
+    $this->browse(function ($browser) {
+        $browser->visit(loginUrl())
+            ->type('user_login', 'admin')
+            ->type('user_pass', 'password')
+            ->press('Log In')
+            ->visit(newPostUrl())
+            ->type(postTitleSelector(), 'My Post')
+            ->click(publishButtonSelector())
+            ->waitForText('Post published');
+    });
 });
 ```
 
@@ -582,8 +697,131 @@ composer qa
 
 1. **Auto Installation**: On first run, PestWP downloads WordPress and SQLite integration plugin
 2. **Bootstrap**: Pest automatically loads WordPress with SQLite before running tests
-3. **Isolation**: Each test runs in a database transaction (SAVEPOINT/ROLLBACK)
+3. **Isolation**: Each test runs with automatic database snapshots (~1.7ms overhead)
 4. **Type Safety**: Factory helpers provide full IDE autocompletion and static analysis
+
+## Troubleshooting
+
+### Common Issues
+
+**Tests fail with "WordPress not found"**
+```bash
+# Clear and reinstall WordPress
+rm -rf .pest/wordpress
+./vendor/bin/pest
+```
+
+**PHPStan memory errors**
+```bash
+vendor/bin/phpstan analyse --memory-limit=512M
+```
+
+**Browser tests timeout**
+```bash
+# Ensure WordPress is accessible
+curl http://localhost:8080
+
+# Check browser installation
+./vendor/bin/pest --browser-install
+
+# Run with visible browser for debugging
+./vendor/bin/pest --browser --headed
+```
+
+**Database isolation not working**
+```php
+// Ensure you have the trait in tests/Pest.php
+uses(PestWP\Concerns\InteractsWithDatabase::class)->in('Integration');
+```
+
+### Debug Mode
+
+Enable verbose output for troubleshooting:
+
+```bash
+# Verbose test output
+./vendor/bin/pest -v
+
+# Debug WordPress loading
+PEST_WP_DEBUG=1 ./vendor/bin/pest
+```
+
+## GitHub Actions (CI/CD)
+
+PestWP includes ready-to-use GitHub Actions workflows for continuous integration.
+
+### Quick Setup
+
+Copy the simple workflow to your project:
+
+```yaml
+# .github/workflows/tests.yml
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    name: 'PHP ${{ matrix.php }}'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.3', '8.4']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_sqlite, dom, gd, zip
+          tools: composer:v2
+
+      - name: Cache WordPress
+        uses: actions/cache@v4
+        with:
+          path: .pest/wordpress
+          key: wordpress-latest
+
+      - name: Install & Test
+        run: |
+          composer install --no-progress
+          vendor/bin/pest --coverage
+```
+
+### Full Workflow Template
+
+For a complete workflow with code quality checks, matrix testing, and browser tests, copy:
+
+```
+.github/workflows/wordpress-tests.yml
+```
+
+This includes:
+- ✅ Matrix testing (PHP 8.3, 8.4)
+- ✅ PHPStan static analysis
+- ✅ Code style checks (Pint)
+- ✅ WordPress caching for faster builds
+- ✅ Coverage reporting (Codecov)
+- ✅ Browser tests (on-demand)
+
+### Running Browser Tests in CI
+
+Browser tests require a running WordPress instance. The full workflow uses Docker services:
+
+```yaml
+services:
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - 8080:80
+```
+
+Enable browser tests by including `[browser]` in your commit message, or run them on a schedule.
 
 ## Credits
 

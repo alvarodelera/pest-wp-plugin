@@ -1,0 +1,77 @@
+# PestWP - Simple Workflow Template
+# =================================
+# A minimal GitHub Actions workflow for WordPress plugin/theme testing.
+# Copy to your project's .github/workflows/tests.yml
+#
+# This workflow runs:
+# - Unit tests (no WordPress required)
+# - Integration tests (with WordPress + SQLite)
+
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    name: 'PHP ${{ matrix.php }}'
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xml, pdo_sqlite, dom, gd, zip
+          coverage: pcov
+          tools: composer:v2
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+
+      - name: Cache WordPress
+        uses: actions/cache@v4
+        with:
+          path: .pest/wordpress
+          key: wordpress-latest
+
+      - name: Install dependencies
+        run: composer install --no-progress
+
+      - name: Run tests
+        run: vendor/bin/pest --coverage
+
+  quality:
+    name: 'Code Quality'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-progress
+
+      - name: PHPStan
+        run: vendor/bin/phpstan analyse --memory-limit=512M
+
+      - name: Code Style
+        run: vendor/bin/pint --test
