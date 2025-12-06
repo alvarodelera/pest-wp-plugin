@@ -1,0 +1,14 @@
+{
+    "recommendations": [
+        "open-southeners.laravel-pint",
+        "bmewburn.vscode-intelephense-client",
+        "xdebug.php-debug",
+        "recca0120.vscode-phpunit",
+        "m1guelpf.better-pest",
+        "sanderronde.phpstan-vscode"
+    ],
+    "unwantedRecommendations": [
+        "shevaua.phpcs",
+        "ikappas.phpcs"
+    ]
+}

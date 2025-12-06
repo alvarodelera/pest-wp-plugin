@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<ruleset name="PestWP">
+    <description>PSR-12 coding standard for Pest WordPress Plugin</description>
+
+    <!-- Use PSR-12 as base -->
+    <rule ref="PSR12"/>
+
+    <!-- Paths to check -->
+    <file>src</file>
+    <file>tests</file>
+
+    <!-- Exclude vendor and other directories -->
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>.pest/*</exclude-pattern>
+    <exclude-pattern>phpstan.cache/*</exclude-pattern>
+
+    <!-- Additional rules to match Pint config -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="0"/>
+        </properties>
+    </rule>
+</ruleset>
