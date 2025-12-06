@@ -578,6 +578,114 @@ export WP_ADMIN_USER=admin
 export WP_ADMIN_PASSWORD=password
 ```
 
+### WordPress Environment Setup
+
+Browser tests require a **running WordPress instance** (unlike integration tests which use SQLite). Here are common setups:
+
+#### Option 1: wp-env (Recommended for WordPress development)
+
+[wp-env](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-env/) is the official WordPress local environment tool.
+
+```bash
+# Install wp-env globally
+npm install -g @wordpress/env
+
+# Start WordPress (default: http://localhost:8888)
+wp-env start
+
+# Configure PestWP
+vendor/bin/pest-setup-browser --url http://localhost:8888 --user admin --pass password
+
+# Run browser tests
+./vendor/bin/pest --browser tests/Browser/
+```
+
+#### Option 2: Docker Compose
+
+Create a `docker-compose.yml` for isolated testing:
+
+```yaml
+version: '3.8'
+services:
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - ./wp-content/plugins/my-plugin:/var/www/html/wp-content/plugins/my-plugin
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+      MYSQL_ROOT_PASSWORD: root
+```
+
+```bash
+# Start containers
+docker-compose up -d
+
+# Install WordPress (first time only)
+docker-compose exec wordpress wp core install \
+  --url=http://localhost:8080 \
+  --title="Test Site" \
+  --admin_user=admin \
+  --admin_password=password \
+  --admin_email=admin@example.com
+
+# Configure PestWP
+vendor/bin/pest-setup-browser --url http://localhost:8080 --user admin --pass password
+
+# Run browser tests
+./vendor/bin/pest --browser tests/Browser/
+```
+
+#### Option 3: Local by Flywheel / MAMP / XAMPP
+
+If you have a local WordPress installation:
+
+```bash
+# Configure with your local URL
+vendor/bin/pest-setup-browser --url http://mysite.local --user admin --pass yourpassword
+
+# Run browser tests
+./vendor/bin/pest --browser tests/Browser/
+```
+
+#### Option 4: wp-browser (Advanced)
+
+For projects already using [wp-browser](https://wpbrowser.wptestkit.dev/), you can configure PestWP to use the same WordPress instance:
+
+```php
+// tests/Pest.php
+function browser(): array
+{
+    return [
+        'base_url' => getenv('WP_URL') ?: 'http://wordpress.test',
+        'admin_user' => getenv('WP_ADMIN_USER') ?: 'admin',
+        'admin_password' => getenv('WP_ADMIN_PASSWORD') ?: 'password',
+    ];
+}
+```
+
+### Integration Tests vs Browser Tests: Which WordPress?
+
+| Test Type | WordPress Instance | Database |
+|-----------|-------------------|----------|
+| **Integration** | Auto-installed in `.pest/wordpress/` | SQLite (isolated) |
+| **Browser** | Your running server (Docker, wp-env, etc.) | MySQL/MariaDB |
+
+**Important**: Browser tests interact with a real WordPress installation. Changes made during browser tests **persist** unless you reset the database manually or use a fresh container.
+
 ### WP Admin Locators
 
 PestWP provides helper functions for building URLs and CSS selectors for WordPress admin UI elements. These locators are designed to be resilient across WordPress versions (6.5+).

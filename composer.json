@@ -1,6 +1,5 @@
 {
   "name": "alvarodelera/pest-wp-plugin",
-  "version": "1.0.0-dev",
   "description": "Pest plugin for WordPress testing with SQLite support and zero-config setup",
   "keywords": [
     "pest",
@@ -12,11 +11,17 @@
   ],
   "license": "MIT",
   "type": "library",
+  "homepage": "https://github.com/alvarodelera/pest-wp-plugin",
   "authors": [
     {
-      "name": "Pest Plugin WordPress Contributors"
+      "name": "Alvaro de Lera",
+      "homepage": "https://github.com/alvarodelera"
     }
   ],
+  "support": {
+    "issues": "https://github.com/alvarodelera/pest-wp-plugin/issues",
+    "source": "https://github.com/alvarodelera/pest-wp-plugin"
+  },
   "require": {
     "php": "^8.3",
     "pestphp/pest": "^4.0",
