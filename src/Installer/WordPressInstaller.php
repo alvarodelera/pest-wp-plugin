@@ -207,8 +207,11 @@ final class WordPressInstaller
         // Move the wordpress folder to the correct location
         $extractedPath = $tempPath . DIRECTORY_SEPARATOR . 'wordpress';
         if (is_dir($extractedPath)) {
-            if (! rename($extractedPath, $this->installPath)) {
-                throw new RuntimeException('Failed to move WordPress to installation directory');
+            // Try rename first (faster), fall back to copy on Windows
+            if (! @rename($extractedPath, $this->installPath)) {
+                // rename() often fails on Windows, use copy instead
+                $this->copyDirectory($extractedPath, $this->installPath);
+                $this->removeDirectory($extractedPath);
             }
         }
 
@@ -223,6 +226,42 @@ final class WordPressInstaller
     {
         if (file_exists($zipPath)) {
             unlink($zipPath);
+        }
+    }
+
+    /**
+     * Copy a directory recursively.
+     *
+     * @throws RuntimeException If copy fails
+     */
+    private function copyDirectory(string $source, string $destination): void
+    {
+        if (! is_dir($source)) {
+            throw new RuntimeException('Source directory does not exist: ' . $source);
+        }
+
+        $this->ensureDirectoryExists($destination);
+
+        $items = scandir($source);
+        if ($items === false) {
+            throw new RuntimeException('Failed to read source directory: ' . $source);
+        }
+
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $sourcePath = $source . DIRECTORY_SEPARATOR . $item;
+            $destPath = $destination . DIRECTORY_SEPARATOR . $item;
+
+            if (is_dir($sourcePath)) {
+                $this->copyDirectory($sourcePath, $destPath);
+            } else {
+                if (! copy($sourcePath, $destPath)) {
+                    throw new RuntimeException('Failed to copy file: ' . $sourcePath);
+                }
+            }
         }
     }
 

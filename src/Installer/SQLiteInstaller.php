@@ -211,7 +211,12 @@ final class SQLiteInstaller
             if (! is_dir(dirname($destination))) {
                 mkdir(dirname($destination), 0755, true);
             }
-            rename($extractedPath, $destination);
+            // Try rename first (faster), fall back to copy on Windows
+            if (! @rename($extractedPath, $destination)) {
+                // rename() often fails on Windows, use copy instead
+                $this->copyDirectory($extractedPath, $destination);
+                $this->removeDirectory($extractedPath);
+            }
         }
 
         // Cleanup temp
@@ -310,6 +315,44 @@ PHP;
         $htaccessPath = $dbDir . DIRECTORY_SEPARATOR . '.htaccess';
         if (! file_exists($htaccessPath)) {
             file_put_contents($htaccessPath, "Deny from all\n");
+        }
+    }
+
+    /**
+     * Copy a directory recursively.
+     *
+     * @throws RuntimeException If copy fails
+     */
+    private function copyDirectory(string $source, string $destination): void
+    {
+        if (! is_dir($source)) {
+            throw new RuntimeException('Source directory does not exist: ' . $source);
+        }
+
+        if (! is_dir($destination)) {
+            mkdir($destination, 0755, true);
+        }
+
+        $items = scandir($source);
+        if ($items === false) {
+            throw new RuntimeException('Failed to read source directory: ' . $source);
+        }
+
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $sourcePath = $source . DIRECTORY_SEPARATOR . $item;
+            $destPath = $destination . DIRECTORY_SEPARATOR . $item;
+
+            if (is_dir($sourcePath)) {
+                $this->copyDirectory($sourcePath, $destPath);
+            } else {
+                if (! copy($sourcePath, $destPath)) {
+                    throw new RuntimeException('Failed to copy file: ' . $sourcePath);
+                }
+            }
         }
     }
 

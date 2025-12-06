@@ -85,6 +85,195 @@ That's it! PestWP automatically:
 - Isolates each test with database snapshots
 - Provides type-safe factories and helpers
 
+## Testing Your WordPress Plugin
+
+If you're developing a WordPress plugin and want to test it with PestWP, you need to configure Pest to load your plugin when WordPress boots.
+
+### Basic Plugin Configuration
+
+```php
+<?php
+// tests/Pest.php
+
+use PestWP\Config;
+use PestWP\Database\TransactionManager;
+
+/*
+|--------------------------------------------------------------------------
+| Load Your Plugin
+|--------------------------------------------------------------------------
+|
+| Tell PestWP to load your plugin when WordPress initializes.
+| Use the absolute path to your main plugin file.
+|
+*/
+
+Config::plugins([
+    dirname(__DIR__) . '/my-plugin.php',
+]);
+
+/*
+|--------------------------------------------------------------------------
+| Database Isolation
+|--------------------------------------------------------------------------
+*/
+
+uses()
+    ->beforeEach(fn () => TransactionManager::beginTransaction())
+    ->afterEach(fn () => TransactionManager::rollback())
+    ->in('Integration');
+```
+
+### Complete Configuration Example
+
+For a full-featured plugin test setup:
+
+```php
+<?php
+// tests/Pest.php
+
+use PestWP\Config;
+use PestWP\Database\TransactionManager;
+
+/*
+|--------------------------------------------------------------------------
+| Plugin Configuration
+|--------------------------------------------------------------------------
+*/
+
+// Load your main plugin
+Config::plugins(dirname(__DIR__) . '/my-awesome-plugin.php');
+
+// Or load multiple plugins if your plugin has dependencies
+Config::plugins([
+    dirname(__DIR__) . '/vendor/woocommerce/woocommerce.php', // Dependency
+    dirname(__DIR__) . '/my-woo-extension.php',                // Your plugin
+]);
+
+// Load MU-plugins (loaded before regular plugins)
+Config::muPlugins([
+    dirname(__DIR__) . '/tests/mu-plugins/test-helpers.php',
+]);
+
+// Set active theme (optional)
+Config::theme('twentytwentyfour');
+
+/*
+|--------------------------------------------------------------------------
+| Custom Setup Hooks
+|--------------------------------------------------------------------------
+*/
+
+// Run code BEFORE WordPress loads (define constants, etc.)
+Config::beforeWordPress(function () {
+    define('MY_PLUGIN_DEBUG', true);
+    define('MY_PLUGIN_TEST_MODE', true);
+});
+
+// Run code AFTER WordPress loads (set options, add filters, etc.)
+Config::afterWordPress(function () {
+    // Set plugin options for testing
+    update_option('my_plugin_api_key', 'test-api-key');
+    update_option('my_plugin_settings', [
+        'feature_x' => true,
+        'feature_y' => false,
+    ]);
+    
+    // Add test-specific filters
+    add_filter('my_plugin_external_api', fn() => 'mock-response');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Database Isolation
+|--------------------------------------------------------------------------
+*/
+
+uses()
+    ->beforeEach(fn () => TransactionManager::beginTransaction())
+    ->afterEach(fn () => TransactionManager::rollback())
+    ->in('Integration');
+```
+
+### Example Plugin Test
+
+```php
+<?php
+// tests/Integration/MyPluginTest.php
+
+use function PestWP\createPost;
+use function PestWP\createUser;
+
+describe('My Plugin', function () {
+    
+    it('registers custom post type on init', function () {
+        // Your plugin should have registered this via init hook
+        expect(post_type_exists('my_custom_type'))->toBeTrue();
+    });
+    
+    it('adds custom meta box', function () {
+        do_action('add_meta_boxes', 'post');
+        
+        global $wp_meta_boxes;
+        expect($wp_meta_boxes['post']['normal']['default'])
+            ->toHaveKey('my_plugin_meta_box');
+    });
+    
+    it('filters the content', function () {
+        $post = createPost(['post_content' => 'Original content']);
+        $filtered = apply_filters('the_content', $post->post_content);
+        
+        expect($filtered)->toContain('Modified by my plugin');
+    });
+    
+    it('requires admin capability for settings', function () {
+        $subscriber = createUser('subscriber');
+        loginAs($subscriber);
+        
+        expect(current_user_can('my_plugin_manage_settings'))->toBeFalse();
+        
+        $admin = createUser('administrator');
+        loginAs($admin);
+        
+        expect(current_user_can('my_plugin_manage_settings'))->toBeTrue();
+    });
+    
+    it('stores data correctly', function () {
+        $post = createPost();
+        
+        // Call your plugin function
+        my_plugin_save_data($post->ID, ['key' => 'value']);
+        
+        expect(get_post_meta($post->ID, '_my_plugin_data', true))
+            ->toBe(['key' => 'value']);
+    });
+});
+```
+
+### Project Structure
+
+Recommended test structure for a WordPress plugin:
+
+```
+my-plugin/
+├── my-plugin.php           # Main plugin file
+├── src/                    # Plugin source code
+├── composer.json
+├── phpunit.xml
+├── tests/
+│   ├── Pest.php            # PestWP configuration
+│   ├── Integration/        # Integration tests (WordPress loaded)
+│   │   ├── PostTypesTest.php
+│   │   ├── MetaBoxesTest.php
+│   │   └── PermissionsTest.php
+│   └── Unit/               # Unit tests (no WordPress)
+│       ├── HelpersTest.php
+│       └── ValidatorsTest.php
+└── .pest/                  # Auto-created by PestWP
+    ├── wordpress/          # WordPress installation
+    └── database/           # SQLite database
+```
+
 ### Basic Test Example
 
 ```php

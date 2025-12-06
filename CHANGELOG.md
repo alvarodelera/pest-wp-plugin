@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-12-07
+
+### Added
+
+- **Plugin configuration system** (`PestWP\Config`) for loading plugins during tests:
+  - `Config::plugins()` - Register plugins to load when WordPress boots
+  - `Config::muPlugins()` - Register MU-plugins to load
+  - `Config::theme()` - Set active theme for tests
+  - `Config::beforeWordPress()` - Execute callbacks before WordPress loads
+  - `Config::afterWordPress()` - Execute callbacks after WordPress loads
+- Comprehensive documentation for plugin developers in README
+- Unit tests for Config class (21 new tests)
+
+### Fixed
+
+- **Cross-platform compatibility** for Windows, Linux, and macOS:
+  - `WordPressInstaller` now uses `copyDirectory()` fallback when `rename()` fails
+  - `SQLiteInstaller` now uses `copyDirectory()` fallback when `rename()` fails
+  - Fixes "Access denied" errors on Windows during WordPress extraction
+
 ## [0.1.0] - 2025-12-06
 
 ### Added
@@ -43,5 +63,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This is the initial development release (0.x). The API may change based on feedback.
 When stable, version 1.0.0 will be released.
 
-[Unreleased]: https://github.com/alvarodelera/pest-wp-plugin/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/alvarodelera/pest-wp-plugin/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/alvarodelera/pest-wp-plugin/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/alvarodelera/pest-wp-plugin/releases/tag/v0.1.0

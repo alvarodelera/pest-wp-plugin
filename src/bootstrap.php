@@ -44,6 +44,9 @@ function bootstrap(?string $basePath = null, bool $autoInstall = true): void
         }
     }
 
+    // Execute before-WordPress callbacks (for custom constants, etc.)
+    Config::executeBeforeCallbacks();
+
     // Initialize the installer
     $installer = new Installer($basePath);
 
@@ -184,6 +187,18 @@ function loadWordPress(Installer $installer): void
 
     // Ensure WordPress is installed
     ensureWordPressInstalled();
+
+    // Load configured plugins
+    Config::loadPlugins();
+
+    // Apply theme configuration
+    Config::applyTheme();
+
+    // Execute after-WordPress callbacks
+    Config::executeAfterCallbacks();
+
+    // Mark configuration as applied
+    Config::markApplied();
 
     // Mark TestCase as having WordPress loaded
     TestCase::markWordPressLoaded();
