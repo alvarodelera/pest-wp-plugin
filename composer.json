@@ -19,7 +19,8 @@
   ],
   "require": {
     "php": "^8.3",
-    "pestphp/pest": "^4.0"
+    "pestphp/pest": "^4.0",
+    "pestphp/pest-plugin-browser": "^4.0"
   },
   "require-dev": {
     "laravel/pint": "^1.18",
@@ -44,13 +45,17 @@
       "PestWP\\Tests\\": "tests/"
     }
   },
+  "bin": [
+    "bin/pest-setup-browser"
+  ],
   "minimum-stability": "stable",
   "prefer-stable": true,
   "config": {
     "sort-packages": true,
     "preferred-install": "dist",
     "allow-plugins": {
-      "pestphp/pest-plugin": true
+      "pestphp/pest-plugin": true,
+      "pestphp/pest-plugin-browser": true
     }
   },
   "extra": {

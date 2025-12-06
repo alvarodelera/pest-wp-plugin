@@ -367,6 +367,104 @@ it('test B does not see the post from test A', function () {
 });
 ```
 
+## Browser Testing (E2E)
+
+PestWP integrates with [Pest Browser Plugin](https://pestphp.com/docs/browser-testing) for browser-based end-to-end testing of your WordPress site.
+
+### Quick Setup
+
+```bash
+# 1. Install browser dependencies
+./vendor/bin/pest --browser-install
+
+# 2. Configure WordPress credentials
+vendor/bin/pest-setup-browser --url http://localhost:8080 --user admin --pass password
+
+# 3. Run browser tests
+./vendor/bin/pest --browser tests/Browser/
+```
+
+### Features
+
+- 🐘 **Native PHP**: Write browser tests in PHP, not TypeScript
+- ⚡ **Pest Integration**: Uses the same Pest syntax you already know
+- 🎯 **Laravel Dusk API**: Familiar API if you've used Laravel Dusk
+- 📸 **Auto Screenshots**: Automatic screenshots on test failures
+- 🌐 **Multi-Browser**: Support for Chromium, Firefox, and WebKit
+
+### Example Browser Test
+
+```php
+<?php
+// tests/Browser/PostsTest.php
+
+use function PestWP\Functions\getBrowserConfig;
+
+it('can log into WordPress dashboard', function () {
+    $config = getBrowserConfig();
+
+    $this->browse(function ($browser) use ($config) {
+        $browser->visit($config['base_url'] . '/wp-login.php')
+            ->type('user_login', $config['admin_user'])
+            ->type('user_pass', $config['admin_password'])
+            ->press('Log In')
+            ->waitForLocation('/wp-admin/')
+            ->assertSee('Dashboard');
+    });
+});
+
+it('can create a new post', function () {
+    $config = getBrowserConfig();
+
+    $this->browse(function ($browser) use ($config) {
+        $browser->visit($config['base_url'] . '/wp-admin/post-new.php')
+            ->type('[aria-label="Add title"]', 'My New Post')
+            ->press('Publish')
+            ->press('Publish') // Confirm
+            ->waitForText('Post published');
+    });
+});
+```
+
+### Running Browser Tests
+
+```bash
+# Run all browser tests
+./vendor/bin/pest --browser tests/Browser/
+
+# Run with visible browser (headed mode)
+./vendor/bin/pest --browser --headed
+
+# Run specific test file
+./vendor/bin/pest --browser tests/Browser/DashboardTest.php
+```
+
+### Browser Configuration
+
+The `getBrowserConfig()` helper reads configuration from your `tests/Pest.php` or environment variables:
+
+```php
+// In tests/Pest.php (created by pest-setup-browser)
+function browser(): array
+{
+    return [
+        'base_url' => 'http://localhost:8080',
+        'admin_user' => 'admin',
+        'admin_password' => 'password',
+    ];
+}
+```
+
+Or use environment variables:
+
+```bash
+export WP_BASE_URL=http://localhost:8080
+export WP_ADMIN_USER=admin
+export WP_ADMIN_PASSWORD=password
+```
+
+For complete browser testing documentation, see [docs/BROWSER_TESTING.md](docs/BROWSER_TESTING.md).
+
 ## Configuration
 
 The plugin works out of the box, but you can customize it in your `tests/Pest.php`:

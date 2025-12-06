@@ -1,6 +1,8 @@
 # Dependencies
 /vendor/
 composer.lock
+node_modules/
+package-lock.json
 
 # IDE
 .idea/
@@ -15,6 +17,11 @@ composer.lock
 .phpunit.cache/
 coverage/
 .coverage/
+
+# Playwright
+playwright-report/
+test-results/
+.auth/
 
 # PHPStan
 phpstan.cache/

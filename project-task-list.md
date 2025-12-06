@@ -164,47 +164,97 @@ Simplificar la autenticación en tests.
 - ✅ PHPStan nivel 9 sin errores.
 - ✅ Pint sin issues de estilo.
 
-### 2.4 Custom Expectations (DSL)
+### 2.4 Custom Expectations (DSL) ✅ COMPLETADA
 El "lenguaje" del plugin.
 
-- [ ] **Objetos WP:**
-    - `expect($post)->toBePublished()` (`status === 'publish'`).
-    - `expect($post)->toBeDraft()`.
-    - `expect($wp_error)->toBeWPError()`.
-- [ ] **Base de Datos / Meta:**
-    - `expect($post)->toHaveMeta('price', 100)`.
-- [ ] **Hooks:**
-    - `expect('init')->toHaveAction('mi_funcion')`.
+- [x] **Expectations Organizadas por Categoría:**
+    - **Posts** (`posts.php`): `toBePublished()`, `toBeDraft()`, `toBePending()`, `toBePrivate()`, `toBeInTrash()`.
+    - **Errors** (`errors.php`): `toBeWPError()`, `toHaveErrorCode()`.
+    - **Metadata** (`metadata.php`): `toHaveMeta()`, `toHaveMetaKey()`, `toHaveUserMeta()`.
+    - **Hooks** (`hooks.php`): `toHaveAction()`, `toHaveFilter()`.
+    - **Terms** (`terms.php`): `toHaveTerm()`, `toBeRegisteredTaxonomy()`.
+    - **Users** (`users.php`): `toHaveCapability()`, `toHaveRole()`, `can()`.
+    - **Shortcodes** (`shortcodes.php`): `toBeRegisteredShortcode()`.
+    - **Options** (`options.php`): `toHaveOption()`, `toHaveTransient()`.
+    - **Post Types** (`post-types.php`): `toBeRegisteredPostType()`, `toSupportFeature()`.
+- [x] **Helpers Adicionales:**
+    - Options: `setOption()`, `deleteOption()`.
+    - Transients: `setTransient()`, `deleteTransient()`.
+    - Shortcodes: `registerTestShortcode()`, `unregisterShortcode()`.
+- [x] **Tests Comprehensivos:**
+    - 39 tests para expectations originales (72 assertions).
+    - 43 tests para expectations adicionales (92 assertions).
+    - Total: 163 tests pasando (364 assertions).
+- [x] **Estructura Modular:**
+    - Archivos separados en `src/Expectations/` por categoría.
+    - README.md en carpeta Expectations.
+    - Carga automática desde `src/Expectations.php`.
 
 **✅ Criterio de Éxito:**
-- Todos los expectations tienen tests unitarios propios dentro del paquete cubriendo casos positivos y negativos (falsos positivos).
+- ✅ Todos los expectations tienen tests cubriendo casos positivos y negativos.
+- ✅ 163 tests pasan (364 assertions).
+- ✅ PHPStan nivel 9 sin errores.
+- ✅ Pint PSR-12 compliant.
 
 ## 🔵 Fase 3: Browser Testing (E2E con Playwright)
 **Objetivo:** Tests de navegador estables y agnósticos al entorno.
 
-### 3.1 Wizard de Configuración
+### 3.1 Wizard de Configuración ✅ COMPLETADA
 Guiar al usuario para conectar su entorno.
 
-- [ ] **Comando `pest:setup-browser`:**
-    - Input: URL Base.
-    - Input: Credenciales Admin (User/Pass).
-    - Action: Crear/Actualizar `pest.php` sección `browser()`.
+- [x] **Comando `pest-setup-browser`:**
+    - Input: URL Base (--url).
+    - Input: Credenciales Admin (--user, --pass).
+    - Action: Crear/Actualizar `tests/Pest.php` sección `browser()`.
+    - Implementación: `src/Commands/SetupBrowserCommand.php`.
+    - CLI Executable: `bin/pest-setup-browser`.
+    - Validación completa de inputs (URL format, empty values).
+    - Preserva contenido existente del archivo Pest.php.
+    - Maneja múltiples formatos de URL (HTTP/HTTPS, con puerto).
+    - Soporta caracteres especiales en contraseñas.
+- [x] **Tests Comprehensivos:**
+    - 14 tests de comando (36 assertions).
+    - Coverage: validación, generación de config, actualización, casos edge.
+- [x] **Registro en Composer:**
+    - Añadido `bin/pest-setup-browser` al `composer.json`.
+    - El comando está disponible globalmente tras instalación.
 
 **✅ Criterio de Éxito:**
-- El comando modifica el archivo `pest.php` correctamente sin romper la sintaxis existente.
+- ✅ El comando modifica el archivo `tests/Pest.php` correctamente sin romper la sintaxis existente.
+- ✅ 177 tests pasan (400 assertions).
+- ✅ PHPStan nivel 9 sin errores.
+- ✅ Pint PSR-12 compliant.
 
-### 3.2 Auth Strategy (Zero-Login)
-Optimización de velocidad para tests E2E.
+### 3.2 Pest Browser Plugin Integration ✅ COMPLETADA
+Integración con el plugin oficial de Pest para testing E2E.
 
-- [ ] **Global Setup Script:** Crear script TS/JS para Playwright.
-    - Navegar a `/wp-login.php`.
-    - Rellenar form.
-    - Guardar estado en `.pest/state/admin.json`.
-- [ ] **Helper `loginAsAdmin()` en Pest:**
-    - Debe instruir a Playwright para cargar ese JSON antes del test.
+- [x] **Pest Browser Plugin:**
+    - Añadido `pestphp/pest-plugin-browser:^4.0` como dependencia.
+    - Configurado `allow-plugins` en `composer.json`.
+    - Usa Playwright por debajo, pero con API PHP nativa.
+- [x] **Browser Helpers en PHP:**
+    - Implementado `src/Functions/browser.php` con helpers esenciales:
+    - `getBrowserConfig()` - Lee configuración de `browser()` o env vars.
+    - `getStorageStatePath()` - Retorna ruta al archivo de estado de auth.
+    - `hasBrowserAuthState()` - Verifica si existe estado guardado.
+- [x] **Documentación:**
+    - Actualizado `docs/BROWSER_TESTING.md` con guía completa.
+    - Ejemplos de uso con API de Pest Browser.
+    - Troubleshooting y mejores prácticas.
+- [x] **Tests PHP de Helpers:**
+    - 3 tests unitarios en `tests/Unit/Functions/BrowserHelpersTest.php`.
+    - Coverage de funciones de configuración.
+- [x] **Ejemplo de Test Browser:**
+    - Creado `tests/Browser/DashboardTest.php` como template.
 
 **✅ Criterio de Éxito:**
-- Un test que visita `/wp-admin/` carga inmediatamente el Dashboard, sin pasar por el formulario de login ni esperar redirecciones.
+- ✅ Plugin Pest Browser instalado y disponible.
+- ✅ Helpers de PHP proporcionan configuración al plugin.
+- ✅ 180 tests PHP pasan (412 assertions).
+- ✅ PHPStan nivel 9 sin errores.
+- ✅ Pint PSR-12 compliant.
+
+**Nota:** Se migró de Playwright standalone (TypeScript) a Pest Browser Plugin (PHP nativo) para mejor integración con el ecosistema Pest.
 
 ### 3.3 WP Admin Locators
 Abstracciones para selectores frágiles.

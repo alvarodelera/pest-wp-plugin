@@ -1,0 +1,90 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use PestWP\Commands\SetupBrowserCommand;
+
+// Autoload dependencies
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require __DIR__ . '/../vendor/autoload.php';
+} elseif (file_exists(__DIR__ . '/../../../autoload.php')) {
+    require __DIR__ . '/../../../autoload.php';
+} else {
+    fwrite(STDERR, "Error: Unable to find Composer autoloader.\n");
+    exit(1);
+}
+
+// Command help
+$help = <<<'HELP'
+Pest WordPress Browser Testing Setup
+=====================================
+
+Usage:
+  pest:setup-browser [options]
+
+Options:
+  --url=<url>         Base URL of your WordPress site (required)
+  --user=<username>   Admin username (default: admin)
+  --pass=<password>   Admin password (required)
+  --config=<path>     Path to Pest.php config file (default: tests/Pest.php)
+  --help              Display this help message
+
+Examples:
+  pest:setup-browser --url=http://localhost:8080 --pass=secret123
+  pest:setup-browser --url=https://mysite.test --user=testadmin --pass=testpass
+
+HELP;
+
+// Parse arguments
+$options = getopt('', [
+    'url:',
+    'user::',
+    'pass:',
+    'config::',
+    'help',
+]);
+
+if (isset($options['help'])) {
+    echo $help . PHP_EOL;
+    exit(0);
+}
+
+// Validate required options
+if (! isset($options['url'])) {
+    fwrite(STDERR, "Error: --url is required\n\n");
+    echo $help . PHP_EOL;
+    exit(1);
+}
+
+if (! isset($options['pass'])) {
+    fwrite(STDERR, "Error: --pass is required\n\n");
+    echo $help . PHP_EOL;
+    exit(1);
+}
+
+// Set defaults
+$baseUrl = $options['url'];
+$adminUser = $options['user'] ?? 'admin';
+$adminPassword = $options['pass'];
+$configPath = isset($options['config']) ? $options['config'] : null;
+
+try {
+    $command = new SetupBrowserCommand($configPath);
+
+    echo "Setting up browser testing configuration...\n";
+    echo "Base URL: {$baseUrl}\n";
+    echo "Admin User: {$adminUser}\n";
+
+    if ($command->execute($baseUrl, $adminUser, $adminPassword)) {
+        echo "\n✓ Browser testing configuration updated successfully!\n";
+        echo "  Configuration file: " . ($configPath ?? 'tests/Pest.php') . "\n";
+        exit(0);
+    } else {
+        fwrite(STDERR, "\n✗ Failed to update configuration file\n");
+        exit(1);
+    }
+} catch (Throwable $e) {
+    fwrite(STDERR, "\n✗ Error: {$e->getMessage()}\n");
+    exit(1);
+}
