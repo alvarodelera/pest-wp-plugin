@@ -11,7 +11,12 @@ parameters:
     bootstrapFiles:
         - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
 
-    ignoreErrors: []
+    ignoreErrors:
+        # WordPress constants are defined at runtime during bootstrap
+        - message: '#Constant ARRAY_A not found\.#'
+          path: src/bootstrap.php
+        - message: '#Constant ABSPATH not found\.#'
+          path: src/bootstrap.php
 
     # Strictness
     reportUnmatchedIgnoredErrors: true

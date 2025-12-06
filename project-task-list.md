@@ -8,69 +8,82 @@ Este documento detalla paso a paso la ejecución del proyecto. Cada tarea incluy
 ### 1.1 Scaffolding & Meta-Testing (Calidad desde el inicio)
 Configurar el entorno de desarrollo del propio paquete para asegurar estándares altos (level: max).
 
-- [ ] **Inicializar Repositorio:** 
+- [x] **Inicializar Repositorio:** 
     - Estructura estándar de paquete (`src/`, `tests/`, `composer.json`).
     - Inicialización repositorio GIT con .gitignore y .gitattributes 
-- [ ] **Definir Dependencias Core:**
-    - `require`: `pestphp/pest:^4.0`, `yoast/phpunit-polyfills:^3.0`.
-    - `require-dev`: `phpstan/phpstan`, `laravel/pint`, `rector/rector`, `pestphp/pest-plugin-type-coverage`.
-- [ ] **Configurar QA Tools:**
+- [x] **Definir Dependencias Core:**
+    - `require`: `pestphp/pest:^4.0` (sin `yoast/phpunit-polyfills` - no necesarios para estrategia forward-only PHPUnit 12+).
+    - `require-dev`: `phpstan/phpstan`, `laravel/pint`, `rector/rector`, `pestphp/pest-plugin-type-coverage`, `php-stubs/wordpress-stubs`.
+- [x] **Configurar QA Tools:**
     - Crear `phpstan.neon` con nivel 9 (max).
     - Configurar `pint.json` (estándar PSR-12).
     - Configurar GitHub Actions para correr estos checks en cada PR.
     - Configurar el IDE VSCode con un archivo con la settings necesarias para sincronizarlo con estas necesidades cuando se guarden archivos.
 
 **✅ Criterio de Éxito:**
-- Ejecutar `composer lint` no arroja errores.
-- Ejecutar `composer analyse` (PHPStan) pasa en limpio sobre un archivo "Hola Mundo".
-- El repositorio tiene CI funcionando en GitHub.
+- ✅ Ejecutar `composer lint` no arroja errores.
+- ✅ Ejecutar `composer analyse` (PHPStan) pasa en limpio.
+- ✅ El repositorio tiene CI funcionando en GitHub.
 
 ### 1.2 Bootstrapper & SQLite Automator
 La lógica para instalar WordPress y configurar la base de datos sin intervención del usuario.
 
-- [ ] **Downloader Script:** Crear clase `WordPressInstaller`.
+- [x] **Downloader Script:** Crear clase `WordPressInstaller`.
     - Debe descargar la última versión de WP a `.pest/wordpress/`.
     - Debe ser idempotente (no descargar si ya existe y es la versión correcta).
-- [ ] **SQLite Integration:**
+- [x] **SQLite Integration:**
     - Descargar el plugin `sqlite-database-integration` (o drop-in equivalente).
     - Copiar `db.php` a `.pest/wordpress/wp-content/`.
-- [ ] **Config Generator:**
+- [x] **Config Generator:**
     - Generar dinámicamente `wp-tests-config.php` apuntando a la DB SQLite.
     - Definir constantes críticas (`WP_TESTS_DIR`, `WP_DEBUG`).
 
 **✅ Criterio de Éxito:**
-- Al correr el instalador, aparece la carpeta `.pest/wordpress`.
-- Existe un archivo `.pest/wordpress/wp-content/db.php`.
-- Se puede instanciar WordPress manualmente con un script PHP simple (`require 'wp-load.php'`) sin errores de conexión a DB.
+- ✅ Al correr el instalador, aparece la carpeta `.pest/wordpress`.
+- ✅ Existe un archivo `.pest/wordpress/wp-content/db.php`.
+- ✅ Se puede instanciar WordPress manualmente con un script PHP simple (`require 'wp-load.php'`) sin errores de conexión a DB.
 
 ### 1.3 The Compatibility Layer (El puente PHPUnit 12 <-> WP)
 Hacer que la suite legacy de WP funcione en el entorno moderno.
 
-- [ ] **Clase Base `PestWP\TestCase`:**
-    - Extender `WP_UnitTestCase`.
-    - Usar el trait `Yoast\PHPUnitPolyfills\TestCases\TestCaseTrait`.
-- [ ] **Bootstrap Loader:**
+- [x] **Clase Base `PestWP\TestCase`:**
+    - Implementación propia sin depender de WP_UnitTestCase ni Yoast polyfills.
+    - Preparada para extender con rollback de transacciones en Fase 2.
+- [x] **Bootstrap Loader:**
     - Crear `src/bootstrap.php`.
-    - Debe cargar `vendor/autoload.php` y luego la suite de pruebas de WP (`includes/functions.php`).
-    - **CRÍTICO:** Implementar parches en memoria si WP Core usa sintaxis deprecada de PHP 8.3+.
+    - Debe cargar `vendor/autoload.php` y luego WordPress con SQLite.
+    - **NOTA:** No usamos polyfills de Yoast porque no los necesitamos (forward-only strategy: PHP 8.3+, PHPUnit 12+).
 
 **✅ Criterio de Éxito:**
-- Un archivo de test `tests/Unit/ExampleTest.php` que extiende tu nueva clase base puede ejecutarse con `./vendor/bin/pest`.
-- El output de Pest es verde y muestra los tiempos de ejecución.
+- ✅ Tests en `tests/Integration/` pueden ejecutarse con `./vendor/bin/pest`.
+- ✅ El output de Pest es verde y muestra los tiempos de ejecución.
 
 ### 1.4 Proof of Concept (PoC) de Integración
 Verificar que la base de datos realmente funciona y se limpia.
 
-- [ ] **Test de Persistencia:** Crear un test que use `wp_insert_post()`.
-- [ ] **Test de Aislamiento:**
+- [x] **Test de Persistencia:** Crear un test que use `wp_insert_post()`.
+- [~] **Test de Aislamiento:**
     - Test A: Crea un post con título "Unico".
     - Test B: Busca un post con título "Unico" y aserta que NO existe.
+    - **NOTA:** Tests de aislamiento creados pero marcados como `skip()` hasta implementar rollback en Fase 2.
 
 **✅ Criterio de Éxito:**
-- Ambos tests pasan. Esto confirma que la transacción de base de datos (rollback) de `WP_UnitTestCase` está funcionando correctamente sobre SQLite.
+- ✅ Test de persistencia pasa (wp_insert_post funciona correctamente).
+- ⏳ Tests de aislamiento pendientes de rollback de transacciones (Fase 2).
 
 ## 🟡 Fase 2: Developer Experience (La API del Usuario)
 **Objetivo:** Que el desarrollador sienta que está usando una herramienta moderna, no un wrapper viejo de WP.
+
+### 2.0 Database Isolation (Pre-requisito)
+Implementar aislamiento de base de datos entre tests.
+
+- [ ] **Transacciones SQLite:** Implementar BEGIN TRANSACTION al inicio de cada test y ROLLBACK al final.
+- [ ] **TestCase con Hooks:** Crear `beforeEach`/`afterEach` hooks en Pest para manejar el rollback automáticamente.
+- [ ] **Validación:** Los tests de `DatabaseIsolationTest.php` deben pasar (actualmente marcados como `skip()`).
+
+**✅ Criterio de Éxito:**
+- Test A crea un post, Test B verifica que el post NO existe.
+- Cada test comienza con un estado limpio de la base de datos.
 
 ### 2.1 Pest Plugin & Autoloading
 Integración nativa con el ecosistema Pest.

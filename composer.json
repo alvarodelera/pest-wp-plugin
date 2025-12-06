@@ -1,69 +1,70 @@
 {
-    "name": "alvarodelera/pest-wp-plugin",
-    "version": "1.0.0-dev",
-    "description": "Pest plugin for WordPress testing with SQLite support and zero-config setup",
-    "keywords": [
-        "pest",
-        "plugin",
-        "wordpress",
-        "testing",
-        "sqlite",
-        "phpunit"
-    ],
-    "license": "MIT",
-    "type": "library",
-    "authors": [
-        {
-            "name": "Pest Plugin WordPress Contributors"
-        }
-    ],
-    "require": {
-        "php": "^8.3",
-        "pestphp/pest": "^4.0"
-    },
-    "require-dev": {
-        "laravel/pint": "^1.18",
-        "mockery/mockery": "^1.6",
-        "pestphp/pest-plugin-type-coverage": "^4.0",
-        "php-stubs/wordpress-stubs": "^6.9",
-        "phpstan/phpstan": "^2.1",
-        "rector/rector": "^2.0",
-        "symfony/var-dumper": "^7.1"
-    },
-    "autoload": {
-        "psr-4": {
-            "PestWP\\": "src/"
-        },
-        "files": [
-            "src/functions.php"
-        ]
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "PestWP\\Tests\\": "tests/"
-        }
-    },
-    "minimum-stability": "stable",
-    "prefer-stable": true,
-    "config": {
-        "sort-packages": true,
-        "preferred-install": "dist",
-        "allow-plugins": {
-            "pestphp/pest-plugin": true
-        }
-    },
-    "scripts": {
-        "test": "pest",
-        "test:coverage": "pest --coverage",
-        "test:types": "pest --type-coverage",
-        "lint": "pint --test",
-        "lint:fix": "pint",
-        "analyse": "phpstan analyse --memory-limit=2G",
-        "refactor": "rector",
-        "qa": [
-            "@lint",
-            "@analyse",
-            "@test"
-        ]
+  "name": "alvarodelera/pest-wp-plugin",
+  "version": "1.0.0-dev",
+  "description": "Pest plugin for WordPress testing with SQLite support and zero-config setup",
+  "keywords": [
+    "pest",
+    "plugin",
+    "wordpress",
+    "testing",
+    "sqlite",
+    "phpunit"
+  ],
+  "license": "MIT",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Pest Plugin WordPress Contributors"
     }
+  ],
+  "require": {
+    "php": "^8.3",
+    "pestphp/pest": "^4.0"
+  },
+  "require-dev": {
+    "laravel/pint": "^1.18",
+    "mockery/mockery": "^1.6",
+    "pestphp/pest-plugin-type-coverage": "^4.0",
+    "php-stubs/wordpress-stubs": "^6.9",
+    "phpstan/phpstan": "^2.1",
+    "rector/rector": "^2.0",
+    "symfony/var-dumper": "^7.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "PestWP\\": "src/"
+    },
+    "files": [
+      "src/functions.php",
+      "src/bootstrap.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "PestWP\\Tests\\": "tests/"
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "config": {
+    "sort-packages": true,
+    "preferred-install": "dist",
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  },
+  "scripts": {
+    "test": "pest",
+    "test:coverage": "pest --coverage",
+    "test:types": "pest --type-coverage",
+    "lint": "pint --test",
+    "lint:fix": "pint",
+    "analyse": "phpstan analyse --memory-limit=2G",
+    "refactor": "rector",
+    "qa": [
+      "@lint",
+      "@analyse",
+      "@test"
+    ]
+  }
 }
