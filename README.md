@@ -140,6 +140,101 @@ $attachmentId = createAttachment('', 0, [
 ]);
 ```
 
+## Authentication Helpers
+
+PestWP provides convenient helpers for testing authentication and user permissions:
+
+### Login as User
+
+```php
+use function PestWP\loginAs;
+use function PestWP\createUser;
+
+it('can test editor permissions', function () {
+    $editor = createUser('editor');
+    loginAs($editor);
+    
+    expect(current_user_can('edit_posts'))->toBeTrue()
+        ->and(current_user_can('manage_options'))->toBeFalse();
+});
+
+// Can also login by user ID
+loginAs($userId);
+```
+
+### Logout
+
+```php
+use function PestWP\logout;
+
+it('can logout current user', function () {
+    $user = createUser();
+    loginAs($user);
+    
+    expect(isUserLoggedIn())->toBeTrue();
+    
+    logout();
+    
+    expect(isUserLoggedIn())->toBeFalse();
+});
+```
+
+### Check Current User
+
+```php
+use function PestWP\currentUser;
+use function PestWP\isUserLoggedIn;
+
+it('can get current user', function () {
+    $admin = createUser('administrator');
+    loginAs($admin);
+    
+    $current = currentUser();
+    expect($current->ID)->toBe($admin->ID)
+        ->and($current->roles)->toContain('administrator');
+});
+
+it('can check if user is logged in', function () {
+    expect(isUserLoggedIn())->toBeFalse();
+    
+    loginAs(createUser());
+    
+    expect(isUserLoggedIn())->toBeTrue();
+});
+```
+
+### Testing Different User Roles
+
+```php
+use function PestWP\loginAs;
+use function PestWP\createUser;
+
+it('can test subscriber permissions', function () {
+    loginAs(createUser('subscriber'));
+    
+    expect(current_user_can('read'))->toBeTrue()
+        ->and(current_user_can('edit_posts'))->toBeFalse();
+});
+
+it('can test administrator permissions', function () {
+    loginAs(createUser('administrator'));
+    
+    expect(current_user_can('manage_options'))->toBeTrue()
+        ->and(current_user_can('delete_users'))->toBeTrue();
+});
+
+it('can switch between users', function () {
+    $editor = createUser('editor');
+    $author = createUser('author');
+    
+    loginAs($editor);
+    expect(current_user_can('edit_others_posts'))->toBeTrue();
+    
+    loginAs($author);
+    expect(current_user_can('edit_others_posts'))->toBeFalse();
+});
+```
+
 ## Database Isolation
 
 Every test automatically runs in an isolated database transaction. Changes are rolled back after each test:

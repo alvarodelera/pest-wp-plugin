@@ -135,16 +135,34 @@ Mejorar las factorías de WP para que sean amigables con el IDE.
 - ✅ PHPStan nivel 9 no se queja de tipos desconocidos al usar estos helpers.
 - ✅ 61 tests pasan (129 assertions), incluyendo 19 tests específicos para factory helpers.
 
-### 2.3 Auth Helpers
+### 2.3 Auth Helpers ✅ COMPLETADA
 Simplificar la autenticación en tests.
 
-- [ ] **`loginAs(int|WP_User $user)`:**
-    - Debe manejar `wp_set_current_user`.
-    - Debe configurar la cookie de auth simulada para que `current_user_can` funcione.
+- [x] **`loginAs(int|WP_User $user)`:**
+    - Implementado con soporte para WP_User o user ID.
+    - Maneja `wp_set_current_user` y `wp_set_auth_cookie`.
+    - Funciona correctamente con sistema de permisos de WordPress.
+- [x] **`logout()`:**
+    - Implementado para limpiar el usuario actual.
+    - Usa `wp_set_current_user(0)` y `wp_clear_auth_cookie()`.
+- [x] **`currentUser()`:**
+    - Wrapper conveniente de `wp_get_current_user()`.
+    - Retorna objeto `\WP_User` con tipado fuerte.
+- [x] **`isUserLoggedIn()`:**
+    - Wrapper de `is_user_logged_in()` de WordPress.
+    - Verifica el estado de autenticación actual.
+- [x] **Database Isolation Fix:**
+    - Modificado `tests/Pest.php` para ejecutar `logout()` antes y después de cada test.
+    - Esto previene que el estado de auth de un test afecte a otros.
+    - Los auth tests NO usan transaction rollback para preservar usuarios en DB.
 
 **✅ Criterio de Éxito:**
-- Test: `loginAs($admin); expect(current_user_can('manage_options'))->toBeTrue();`
-- Test: `logout(); expect(is_user_logged_in())->toBeFalse();`
+- ✅ `loginAs($admin); expect(current_user_can('manage_options'))->toBeTrue();`
+- ✅ `logout(); expect(is_user_logged_in())->toBeFalse();`
+- ✅ 20 tests de auth helpers pasan (60 assertions).
+- ✅ 81 tests totales pasan (189 assertions).
+- ✅ PHPStan nivel 9 sin errores.
+- ✅ Pint sin issues de estilo.
 
 ### 2.4 Custom Expectations (DSL)
 El "lenguaje" del plugin.

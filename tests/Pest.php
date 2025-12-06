@@ -31,12 +31,29 @@ use PestWP\Database\TransactionManager;
 */
 
 // Apply transaction isolation to all Integration tests
+// EXCEPT AuthHelpersTest which needs to persist users across assertions
 uses()
     ->beforeEach(function (): void {
-        TransactionManager::beginTransaction();
+        // Always logout before starting a test to ensure clean state
+        if (function_exists('PestWP\\logout')) {
+            \PestWP\logout();
+        }
+
+        // Skip transaction for auth tests - they manage their own cleanup
+        if (! str_contains($this->name(), 'Auth Helpers')) {
+            TransactionManager::beginTransaction();
+        }
     })
     ->afterEach(function (): void {
-        TransactionManager::rollback();
+        // Skip rollback for auth tests
+        if (! str_contains($this->name(), 'Auth Helpers')) {
+            TransactionManager::rollback();
+        }
+
+        // Always logout after each test
+        if (function_exists('PestWP\\logout')) {
+            \PestWP\logout();
+        }
     })
     ->in('Integration');
 
