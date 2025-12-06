@@ -53,6 +53,13 @@
       "pestphp/pest-plugin": true
     }
   },
+  "extra": {
+    "pest": {
+      "plugins": [
+        "PestWP\\Plugin"
+      ]
+    }
+  },
   "scripts": {
     "test": "pest",
     "test:coverage": "pest --coverage",

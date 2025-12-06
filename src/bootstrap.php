@@ -107,10 +107,9 @@ function loadWordPress(Installer $installer): void
         define('AUTOMATIC_UPDATER_DISABLED', true);
     }
 
-    // Path constants
-    if (! defined('ABSPATH')) {
-        define('ABSPATH', $wpDir . '/');
-    }
+    // Path constants - Define WP_CONTENT_DIR and related BEFORE loading WordPress
+    // Note: ABSPATH should NOT be defined here - let wp-load.php define it
+    // This ensures wp-config.php is loaded properly
     if (! defined('WP_CONTENT_DIR')) {
         define('WP_CONTENT_DIR', $wpContent);
     }
@@ -174,9 +173,10 @@ function loadWordPress(Installer $installer): void
     $originalErrorReporting = error_reporting();
     error_reporting(E_ERROR | E_PARSE);
 
-    // Load WordPress
+    // Load WordPress through wp-load.php which properly loads wp-config.php first
+    // This ensures $table_prefix is defined correctly before wp-settings.php loads
     ob_start();
-    require_once ABSPATH . 'wp-settings.php';
+    require_once $wpDir . '/wp-load.php';
     ob_end_clean();
 
     // Restore error reporting

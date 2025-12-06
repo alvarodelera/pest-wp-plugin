@@ -5,8 +5,7 @@ declare(strict_types=1);
 /**
  * Pest Plugin for WordPress
  *
- * This is the entry point placeholder for the PestWP namespace.
- * The actual implementation classes will be added as development progresses.
+ * Global helper functions for WordPress testing with Pest.
  */
 
 namespace PestWP;
@@ -17,4 +16,22 @@ namespace PestWP;
 function version(): string
 {
     return '1.0.0-dev';
+}
+
+/**
+ * Get the InteractsWithDatabase trait class name.
+ *
+ * Usage in Pest.php:
+ *
+ *     uses(\PestWP\Concerns\InteractsWithDatabase::class)->in('Integration');
+ *
+ * Or using this helper:
+ *
+ *     uses(PestWP\databaseIsolation())->in('Integration');
+ *
+ * @return class-string
+ */
+function databaseIsolation(): string
+{
+    return Concerns\InteractsWithDatabase::class;
 }

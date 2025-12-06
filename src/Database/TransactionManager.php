@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace PestWP\Database;
 
 /**
- * Manages database isolation for tests.
+ * Manages database isolation for tests using SQLite transactions.
  *
- * This class provides a simple API for test isolation using database snapshots.
- * It wraps DatabaseManager to provide the interface expected by Pest hooks.
+ * This class provides test isolation using the WordPress SQLite translator's
+ * nested transaction support. The translator automatically wraps each query
+ * in a transaction, but also supports explicit START TRANSACTION / ROLLBACK
+ * commands which create nested savepoints (LEVEL0, LEVEL1, etc.).
  *
  * Usage in tests/Pest.php:
  *
@@ -16,49 +18,67 @@ namespace PestWP\Database;
  *         ->beforeEach(fn() => TransactionManager::beginTransaction())
  *         ->afterEach(fn() => TransactionManager::rollback())
  *         ->in('Integration');
- *
- * Despite the name "Transaction", this class uses snapshot-based isolation
- * which is faster and more reliable than actual database transactions with
- * the SQLite WordPress adapter.
  */
 final class TransactionManager
 {
     /**
-     * Whether the manager has been initialized for the test suite.
+     * Whether a transaction is currently active.
      */
-    private static bool $initialized = false;
+    private static bool $transactionActive = false;
 
     /**
-     * Begin a "transaction" (initialize snapshot if needed).
+     * Begin a transaction for test isolation.
      *
-     * This is called before each test. On first call, it creates a snapshot.
-     * On subsequent calls, it restores the database to the snapshot state.
+     * This sends START TRANSACTION through wpdb which the SQLite translator
+     * handles by creating a nested savepoint (SAVEPOINT LEVEL0).
      */
     public static function beginTransaction(): void
     {
-        if (! self::$initialized) {
-            // First call: initialize and create snapshot
-            DatabaseManager::initialize();
-            self::$initialized = true;
+        if (self::$transactionActive) {
+            return;
+        }
+
+        global $wpdb;
+
+        if (! isset($wpdb) || ! ($wpdb instanceof \wpdb)) {
+            return;
+        }
+
+        // Use wpdb->query to send START TRANSACTION
+        // The SQLite translator will handle this and create a nested savepoint
+        $wpdb->query('START TRANSACTION');
+        self::$transactionActive = true;
+    }
+
+    /**
+     * Rollback the transaction to restore the database state.
+     *
+     * This sends ROLLBACK through wpdb which the SQLite translator
+     * handles by rolling back to the nested savepoint.
+     */
+    public static function rollback(): void
+    {
+        if (! self::$transactionActive) {
+            return;
+        }
+
+        global $wpdb;
+
+        if (! isset($wpdb) || ! ($wpdb instanceof \wpdb)) {
+            self::$transactionActive = false;
 
             return;
         }
 
-        // Subsequent calls: restore to snapshot
-        DatabaseManager::restoreSnapshot();
-    }
+        // Use wpdb->query to send ROLLBACK
+        // The SQLite translator will handle this and rollback the nested savepoint
+        $wpdb->query('ROLLBACK');
+        self::$transactionActive = false;
 
-    /**
-     * Rollback the "transaction" (no-op with snapshot approach).
-     *
-     * With the snapshot approach, the rollback is effectively done
-     * at the START of the next test (via restoreSnapshot).
-     * This method exists for API compatibility.
-     */
-    public static function rollback(): void
-    {
-        // No-op: restoration happens in beginTransaction
-        // This keeps the API compatible but avoids double restoration
+        // Clear WordPress caches to ensure fresh data reads
+        if (function_exists('wp_cache_flush')) {
+            wp_cache_flush();
+        }
     }
 
     /**
@@ -66,15 +86,17 @@ final class TransactionManager
      */
     public static function isAvailable(): bool
     {
-        return DatabaseManager::isInitialized() || DatabaseManager::getDatabasePath() !== null;
+        global $wpdb;
+
+        return isset($wpdb) && $wpdb instanceof \wpdb;
     }
 
     /**
-     * Check if isolation is active.
+     * Check if a transaction is currently active.
      */
     public static function isTransactionActive(): bool
     {
-        return self::$initialized && DatabaseManager::isInitialized();
+        return self::$transactionActive;
     }
 
     /**
@@ -82,8 +104,7 @@ final class TransactionManager
      */
     public static function reset(): void
     {
-        self::$initialized = false;
-        DatabaseManager::reset();
+        self::$transactionActive = false;
     }
 
     // ================================================================
@@ -107,10 +128,10 @@ final class TransactionManager
     }
 
     /**
-     * Commit - no-op with snapshot approach.
+     * Commit - no-op with SAVEPOINT approach.
      */
     public static function commit(): void
     {
-        // No-op: snapshots don't need commits
+        // No-op: we always rollback for test isolation
     }
 }

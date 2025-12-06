@@ -39,11 +39,12 @@ $_SERVER['HTTPS'] = '';
 // Initialize required globals
 $GLOBALS['wp_plugin_paths'] = [];
 
-// WordPress path configuration
+// WordPress path configuration - use forward slashes
 $wpDir = str_replace('\\', '/', $pestDir . '/wordpress');
 $wpContent = $wpDir . '/wp-content';
 
 // Define test constants BEFORE loading WordPress
+// These MUST be defined before ABSPATH for them to take effect
 define('WP_USE_THEMES', false);
 define('WP_INSTALLING', true);
 define('WP_DEBUG', false);
@@ -52,36 +53,23 @@ define('DOING_CRON', false);
 define('DISALLOW_FILE_MODS', true);
 define('AUTOMATIC_UPDATER_DISABLED', true);
 
-// Path constants
-define('ABSPATH', $wpDir . '/');
+// Define content directories BEFORE loading WordPress
+// Note: WP_CONTENT_DIR is normally relative to ABSPATH, but we need to set it first
 define('WP_CONTENT_DIR', $wpContent);
 define('WP_PLUGIN_DIR', $wpContent . '/plugins');
 define('WPMU_PLUGIN_DIR', $wpContent . '/mu-plugins');
 
-// Database constants (SQLite drop-in handles actual connection)
-define('DB_NAME', 'wordpress_test');
-define('DB_USER', '');
-define('DB_PASSWORD', '');
-define('DB_HOST', '');
-define('DB_CHARSET', 'utf8mb4');
-define('DB_COLLATE', '');
+// Set the table prefix GLOBALLY before loading WordPress
+// This is CRITICAL - wp-config.php will read it from $GLOBALS
+$GLOBALS['table_prefix'] = 'wptests_';
 
-// Table prefix - WordPress expects this as a variable
-$table_prefix = 'wptests_';
-
-// Authentication keys (for test environment)
-define('AUTH_KEY', 'test-auth-key');
-define('SECURE_AUTH_KEY', 'test-secure-auth-key');
-define('LOGGED_IN_KEY', 'test-logged-in-key');
-define('NONCE_KEY', 'test-nonce-key');
-define('AUTH_SALT', 'test-auth-salt');
-define('SECURE_AUTH_SALT', 'test-secure-auth-salt');
-define('LOGGED_IN_SALT', 'test-logged-in-salt');
-define('NONCE_SALT', 'test-nonce-salt');
-
-// Load WordPress
+// Load WordPress through wp-load.php
+// This will:
+// 1. Define ABSPATH if not defined
+// 2. Load wp-config.php which sets $table_prefix
+// 3. wp-config.php then loads wp-settings.php
 ob_start();
-require_once ABSPATH . 'wp-settings.php';
+require_once $wpDir . '/wp-load.php';
 ob_end_clean();
 
 // Restore error reporting

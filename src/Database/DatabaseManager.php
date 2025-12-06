@@ -34,6 +34,14 @@ final class DatabaseManager
     private static bool $snapshotCreated = false;
 
     /**
+     * Check if the database manager has been initialized.
+     */
+    public static function isInitialized(): bool
+    {
+        return self::$snapshotCreated;
+    }
+
+    /**
      * Initialize the database manager.
      *
      * This should be called once at the start of the test suite.
@@ -93,6 +101,7 @@ final class DatabaseManager
      * Restore the database from the snapshot.
      *
      * This should be called before each test to ensure a clean state.
+     * For SQLite, we use ATTACH DATABASE to restore from the snapshot file.
      */
     public static function restoreSnapshot(): bool
     {
@@ -111,18 +120,80 @@ final class DatabaseManager
             return false;
         }
 
-        // Close any existing database connections
-        self::closeConnections();
+        global $wpdb;
 
-        // Copy the snapshot back to the database location
-        $result = @copy($snapshotPath, $databasePath);
-
-        // Reconnect WordPress to the restored database
-        if ($result) {
-            self::reconnect();
+        if (! isset($wpdb) || ! ($wpdb instanceof \wpdb)) {
+            return false;
         }
 
-        return $result;
+        // Get the PDO connection from the SQLite translator
+        $pdo = self::getPdoConnection();
+        if ($pdo === null) {
+            return false;
+        }
+
+        try {
+            // Close the current connection and force file release
+            $pdo = null;
+
+            // Force garbage collection to release file handles
+            gc_collect_cycles();
+
+            // Small delay to ensure file handle is released (Windows issue)
+            usleep(10000); // 10ms
+
+            // Copy the snapshot back to the database
+            if (! @copy($snapshotPath, $databasePath)) {
+                return false;
+            }
+
+            // Force wpdb to reconnect by nulling the dbh and calling db_connect
+            $reflection = new \ReflectionClass($wpdb);
+            $dbhProperty = $reflection->getProperty('dbh');
+            $dbhProperty->setValue($wpdb, null);
+
+            // Force a new connection
+            $wpdb->db_connect();
+
+            // Clear WordPress caches
+            wp_cache_flush();
+            $wpdb->flush();
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get the PDO connection from wpdb.
+     */
+    private static function getPdoConnection(): ?\PDO
+    {
+        global $wpdb;
+
+        if (! isset($wpdb) || ! ($wpdb instanceof \wpdb)) {
+            return null;
+        }
+
+        try {
+            $reflection = new \ReflectionClass($wpdb);
+            $dbhProperty = $reflection->getProperty('dbh');
+
+            /** @var mixed $translator */
+            $translator = $dbhProperty->getValue($wpdb);
+
+            if (is_object($translator) && method_exists($translator, 'get_pdo')) {
+                /** @var \PDO|null $pdo */
+                $pdo = $translator->get_pdo();
+
+                return $pdo instanceof \PDO ? $pdo : null;
+            }
+        } catch (\ReflectionException $e) {
+            // Ignore
+        }
+
+        return null;
     }
 
     /**
@@ -139,14 +210,6 @@ final class DatabaseManager
         self::$snapshotCreated = false;
         self::$snapshotPath = null;
         self::$databasePath = null;
-    }
-
-    /**
-     * Check if the manager is properly initialized.
-     */
-    public static function isInitialized(): bool
-    {
-        return self::$snapshotCreated;
     }
 
     /**
@@ -206,56 +269,6 @@ final class DatabaseManager
         }
 
         return null;
-    }
-
-    /**
-     * Close existing database connections.
-     */
-    private static function closeConnections(): void
-    {
-        global $wpdb;
-
-        if (! isset($wpdb) || ! ($wpdb instanceof \wpdb)) {
-            return;
-        }
-
-        // Access the translator and close its PDO connection
-        try {
-            $reflection = new \ReflectionClass($wpdb);
-            $dbhProperty = $reflection->getProperty('dbh');
-
-            /** @var mixed $translator */
-            $translator = $dbhProperty->getValue($wpdb);
-
-            if (is_object($translator) && method_exists($translator, 'get_pdo')) {
-                // The PDO connection will be closed when we null the reference
-                // SQLite doesn't have a persistent connection issue like MySQL
-            }
-        } catch (\ReflectionException $e) {
-            // Ignore reflection errors
-        }
-    }
-
-    /**
-     * Reconnect WordPress to the database.
-     *
-     * After restoring the snapshot, we need to ensure WordPress
-     * uses a fresh connection to the restored database.
-     */
-    private static function reconnect(): void
-    {
-        global $wpdb;
-
-        if (! isset($wpdb) || ! ($wpdb instanceof \wpdb)) {
-            return;
-        }
-
-        // Clear WordPress object cache to prevent stale data
-        wp_cache_flush();
-
-        // The SQLite plugin maintains its own connection state
-        // For SQLite, the file-based nature means the next query
-        // will automatically read from the restored database
     }
 
     /**

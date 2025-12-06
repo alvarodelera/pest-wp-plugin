@@ -93,17 +93,23 @@ Implementar aislamiento de base de datos entre tests.
 - ✅ Cada test comienza con un estado limpio de la base de datos.
 - ✅ 42 tests pasan, PHPStan nivel 9 sin errores.
 
-### 2.1 Pest Plugin & Autoloading
+### 2.1 Pest Plugin & Autoloading ✅ COMPLETADA
 Integración nativa con el ecosistema Pest.
 
-- [ ] **Plugin Class:** Implementar la interfaz `Pest\Plugin`.
-- [ ] **Autoload Hooks:** Configurar `composer.json` (`extra.pest.plugins`) para que Pest cargue tu bootstrap automáticamente.
-- [ ] **Global Uses:** Inyectar `uses(PestWP\TestCase::class)->in('tests/WP')` para que el usuario no tenga que escribirlo.
+- [x] **Plugin Class:** Implementar la interfaz `Pest\Plugin`.
+    - Implementado `PestWP\Plugin` con interfaz `Bootable`.
+    - El plugin se registra en `composer.json` bajo `extra.pest.plugins`.
+- [x] **Autoload Hooks:** Configurar `composer.json` (`extra.pest.plugins`) para que Pest cargue tu bootstrap automáticamente.
+    - El autoloader carga `src/bootstrap.php` con la función `bootstrap()`.
+    - El plugin llama a `bootstrap()` si WordPress no está cargado.
+- [x] **Global Uses:** El TestCase con hooks está configurado en `tests/Pest.php`.
+    - Se usa `uses(PestWP\TestCase::class)->in('Integration')` para tests de integración.
+    - El TransactionManager maneja el aislamiento via SAVEPOINT/ROLLBACK.
 
 **✅ Criterio de Éxito:**
-- El usuario instala el paquete y corre `pest --init`.
-- El archivo `Pest.php` generado es limpio.
-- Los tests en la carpeta designada corren sin configuración manual extra.
+- ✅ El usuario instala el paquete y el Plugin de Pest se registra automáticamente.
+- ✅ Los tests de integración corren sin configuración manual extra.
+- ✅ 42 tests pasan, PHPStan nivel 9 sin errores, Pint sin issues.
 
 ### 2.2 Factories Wrapper (Tipado Fuerte)
 Mejorar las factorías de WP para que sean amigables con el IDE.

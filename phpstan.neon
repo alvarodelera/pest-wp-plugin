@@ -18,6 +18,14 @@ parameters:
         - message: '#Constant ABSPATH not found\.#'
           path: src/bootstrap.php
 
+        # Plugin implements Pest internal interface (required for plugin system)
+        - message: '#Class PestWP\\Plugin implements internal interface Pest\\Contracts\\Plugins\\Bootable\.#'
+          path: src/Plugin.php
+
+        # Trait is used by end-users in their Pest.php, not analysed by PHPStan
+        - message: '#Trait PestWP\\Concerns\\InteractsWithDatabase is used zero times and is not analysed\.#'
+          path: src/Concerns/InteractsWithDatabase.php
+
     # Strictness
     reportUnmatchedIgnoredErrors: true
     treatPhpDocTypesAsCertain: false
