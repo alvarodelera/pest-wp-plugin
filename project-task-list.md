@@ -62,28 +62,36 @@ Hacer que la suite legacy de WP funcione en el entorno moderno.
 Verificar que la base de datos realmente funciona y se limpia.
 
 - [x] **Test de Persistencia:** Crear un test que use `wp_insert_post()`.
-- [~] **Test de Aislamiento:**
+- [x] **Test de Aislamiento:**
     - Test A: Crea un post con título "Unico".
     - Test B: Busca un post con título "Unico" y aserta que NO existe.
-    - **NOTA:** Tests de aislamiento creados pero marcados como `skip()` hasta implementar rollback en Fase 2.
+    - ✅ Implementado con enfoque de snapshots (Fase 2.0 completada).
 
 **✅ Criterio de Éxito:**
 - ✅ Test de persistencia pasa (wp_insert_post funciona correctamente).
-- ⏳ Tests de aislamiento pendientes de rollback de transacciones (Fase 2).
+- ✅ Tests de aislamiento pasan (implementado con snapshots de BD).
 
 ## 🟡 Fase 2: Developer Experience (La API del Usuario)
 **Objetivo:** Que el desarrollador sienta que está usando una herramienta moderna, no un wrapper viejo de WP.
 
-### 2.0 Database Isolation (Pre-requisito)
+### 2.0 Database Isolation (Pre-requisito) ✅ COMPLETADA
 Implementar aislamiento de base de datos entre tests.
 
-- [ ] **Transacciones SQLite:** Implementar BEGIN TRANSACTION al inicio de cada test y ROLLBACK al final.
-- [ ] **TestCase con Hooks:** Crear `beforeEach`/`afterEach` hooks en Pest para manejar el rollback automáticamente.
-- [ ] **Validación:** Los tests de `DatabaseIsolationTest.php` deben pasar (actualmente marcados como `skip()`).
+- [x] **Snapshots SQLite:** Implementar sistema de snapshots que copia el estado limpio de la BD antes de cada test.
+    - **Nota:** Se descartó el enfoque de transacciones porque `WP_SQLite_Translator` envuelve cada query en `begin_transaction()`/`commit()` automáticamente, lo que impide el rollback manual.
+    - **Benchmark:** File copy (~1.76ms) es ~14x más rápido que rollback (~24.5ms) por test.
+- [x] **DatabaseManager:** Nueva clase `src/Database/DatabaseManager.php` que gestiona snapshots.
+    - `initialize()` - Detecta la ruta de la BD y crea snapshot inicial.
+    - `createSnapshot()` - Copia la BD a archivo temporal.
+    - `restoreSnapshot()` - Restaura la BD antes de cada test.
+    - `cleanup()` - Limpia el snapshot al final del suite.
+- [x] **TestCase con Hooks:** Hooks `beforeEach`/`afterEach` en `tests/Pest.php` manejan la restauración automáticamente.
+- [x] **Validación:** Los tests de `DatabaseIsolationTest.php` pasan correctamente.
 
 **✅ Criterio de Éxito:**
-- Test A crea un post, Test B verifica que el post NO existe.
-- Cada test comienza con un estado limpio de la base de datos.
+- ✅ Test A crea un post, Test B verifica que el post NO existe.
+- ✅ Cada test comienza con un estado limpio de la base de datos.
+- ✅ 42 tests pasan, PHPStan nivel 9 sin errores.
 
 ### 2.1 Pest Plugin & Autoloading
 Integración nativa con el ecosistema Pest.

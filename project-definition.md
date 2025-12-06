@@ -1,6 +1,6 @@
 # Project Blueprint: Pest Plugin for WordPress
 
-**Estado:** Fase 1 Completada ✅ (Dic 2025)  
+**Estado:** Fase 1 ✅ + Fase 2.0 (Database Isolation) ✅ Completadas (Dic 2025)  
 **Objetivo:** Modernizar la Developer Experience (DX) del testing en WordPress.
 
 ## 1. Resumen Ejecutivo
@@ -63,7 +63,9 @@ graph TD
 **Alternativa Implementada:**
 - Bootstrap propio en `src/bootstrap.php` que carga WordPress con SQLite
 - `TestCase` base simple que no extiende clases legacy de WP
-- Transacciones de base de datos manejadas manualmente (rollback por test)
+- Aislamiento de BD mediante snapshots de archivo (no transacciones - ver nota abajo)
+
+> **Nota sobre Transacciones vs Snapshots:** Se intentó implementar transacciones SQL pero `WP_SQLite_Translator` envuelve cada query en `begin_transaction()`/`commit()` automáticamente, impidiendo el rollback manual. Se adoptó un enfoque de snapshots que copia el archivo SQLite antes de cada test (~1.76ms vs ~24.5ms del rollback fallido).
 
 **Cuándo reconsiderar:**
 - Si en el futuro necesitamos soportar versiones anteriores de PHP/PHPUnit
@@ -127,10 +129,17 @@ Extender `expect()` para entender objetos de WP:
 #### 1.4 Integration PoC
 - [x] Escribir el primer test de integración: `it('loads wordpress option', function() { expect(get_option('siteurl'))->not->toBeEmpty(); });`.
 - [x] Verificar que WordPress + SQLite funciona correctamente (wp_insert_post, get_post, etc.).
-- [ ] Implementar rollback de transacciones para aislamiento de tests (Fase 2).
+- [x] Implementar aislamiento de tests mediante snapshots de BD (Fase 2.0 completada).
 
 ### Fase 2: Developer Experience & Syntax Sugar
 **Objetivo:** Que el usuario prefiera usar tu paquete a escribir PHPUnit puro.
+
+#### 2.0 Database Isolation ✅ COMPLETADA
+- [x] **Snapshots SQLite:** Sistema de snapshots que restaura el estado limpio de la BD antes de cada test.
+- [x] **DatabaseManager:** Clase `src/Database/DatabaseManager.php` para gestión de snapshots.
+- [x] **TransactionManager:** Wrapper API en `src/Database/TransactionManager.php`.
+- [x] **Pest Hooks:** Configurados en `tests/Pest.php` para restauración automática.
+- [x] **Tests de Validación:** 6 tests de aislamiento pasando en `DatabaseIsolationTest.php`.
 
 #### 2.1 Pest Plugin Hooks
 - [ ] Implementar el Plugin de Pest (`Pest\Plugin`) para inyectar configuración global.

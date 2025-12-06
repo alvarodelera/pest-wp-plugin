@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use PestWP\Database\TransactionManager;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -14,6 +16,29 @@ declare(strict_types=1);
 */
 
 // pest()->extend(Tests\TestCase::class)->in('Feature');
+
+/*
+|--------------------------------------------------------------------------
+| Database Isolation
+|--------------------------------------------------------------------------
+|
+| These hooks ensure that each test runs in isolation. The database is
+| restored to a clean snapshot state before each test, guaranteeing that
+| changes made during one test do not affect subsequent tests.
+|
+| This uses SQLite database snapshots for fast and reliable isolation.
+|
+*/
+
+// Apply transaction isolation to all Integration tests
+uses()
+    ->beforeEach(function (): void {
+        TransactionManager::beginTransaction();
+    })
+    ->afterEach(function (): void {
+        TransactionManager::rollback();
+    })
+    ->in('Integration');
 
 /*
 |--------------------------------------------------------------------------

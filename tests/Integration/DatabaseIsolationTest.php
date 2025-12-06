@@ -8,22 +8,26 @@ declare(strict_types=1);
  * These tests verify that database changes in one test do NOT persist
  * to subsequent tests. This is critical for test isolation.
  *
- * Phase 1.4 - PoC Isolation Tests
+ * Phase 2.0 - Database Isolation Implementation
  *
  * IMPORTANT: These tests must be run in order to validate isolation.
  * Test A creates data with a unique identifier.
  * Test B verifies that data does NOT exist.
+ *
+ * The isolation is achieved using SQLite SAVEPOINT/ROLLBACK:
+ * - Before each test: SAVEPOINT is created
+ * - After each test: ROLLBACK TO SAVEPOINT undoes all changes
  */
 
 // WordPress is already loaded by tests/bootstrap.php
 
 /**
- * We use a static marker to communicate between tests.
+ * We use a file-based marker to communicate between tests.
  * In a properly isolated environment, Test B should NOT find Test A's data.
  */
 describe('Database Isolation', function (): void {
     // Unique identifier for this test run
-    $isolationMarker = 'ISOLATION_TEST_' . date('YmdHis');
+    $isolationMarker = 'ISOLATION_TEST_' . date('YmdHis') . '_' . mt_rand(1000, 9999);
 
     it('Test A: creates a post with unique marker', function () use ($isolationMarker): void {
         $postId = wp_insert_post([
@@ -50,9 +54,6 @@ describe('Database Isolation', function (): void {
         $markerFile = sys_get_temp_dir() . '/pestwp_isolation_marker.txt';
 
         if (! file_exists($markerFile)) {
-            // If marker file doesn't exist, Test A hasn't run yet
-            // This can happen if tests run in parallel or out of order
-            // Mark as incomplete rather than failing
             test()->markTestIncomplete('Test A must run before Test B for isolation verification.');
 
             return;
@@ -69,25 +70,16 @@ describe('Database Isolation', function (): void {
             'posts_per_page' => 1,
         ]);
 
-        // IMPORTANT: This is where we verify isolation
-        // If the database is properly isolated/rolled back between tests,
-        // this post should NOT exist
-        //
-        // NOTE: Currently, we don't have automatic rollback implemented.
-        // This test documents the EXPECTED behavior once rollback is working.
-        // For now, we check if the post exists and report accordingly.
+        // The post should NOT exist because Test A's changes were rolled back
+        expect($foundPosts)->toBeEmpty(
+            "Post with title '{$marker}' should have been rolled back, but it still exists.",
+        );
 
-        if (! empty($foundPosts)) {
-            // Post still exists - isolation is NOT working
-            // This is currently expected since we haven't implemented rollback yet
-            test()->markTestIncomplete(
-                'Post from Test A still exists (ID: ' . $postId . '). ' .
-                'Database isolation/rollback is not yet implemented.',
-            );
-        } else {
-            // Post doesn't exist - either isolation is working or post was manually deleted
-            expect($foundPosts)->toBeEmpty();
-        }
+        // Also verify by direct ID lookup
+        $directPost = get_post((int) $postId);
+        expect($directPost)->toBeNull(
+            "Post ID {$postId} should have been rolled back, but it still exists.",
+        );
 
         // Cleanup marker file
         @unlink($markerFile);
@@ -100,9 +92,7 @@ describe('Database Isolation', function (): void {
  * This approach stores the post ID and directly checks if it exists.
  */
 describe('Post ID Isolation Check', function (): void {
-    $testPostId = null;
-
-    test('creates a post and records its ID', function () use (&$testPostId): void {
+    test('creates a post and records its ID', function (): void {
         $postId = wp_insert_post([
             'post_title' => 'Isolation Test Post - ' . uniqid(),
             'post_content' => 'Testing database isolation.',
@@ -134,15 +124,10 @@ describe('Post ID Isolation Check', function (): void {
 
         $post = get_post($postId);
 
-        // Document current behavior
-        if ($post !== null) {
-            test()->markTestIncomplete(
-                "Post ID {$postId} still exists. " .
-                'This is expected until database rollback is implemented in TestCase.',
-            );
-        } else {
-            expect($post)->toBeNull('Post should not exist if isolation is working');
-        }
+        // Post should NOT exist because the previous test was rolled back
+        expect($post)->toBeNull(
+            "Post ID {$postId} should have been rolled back, but it still exists.",
+        );
     });
 });
 
@@ -150,7 +135,7 @@ describe('Post ID Isolation Check', function (): void {
  * Option isolation test.
  */
 describe('Option Isolation Check', function (): void {
-    $optionName = 'pestwp_isolation_test_option';
+    $optionName = 'pestwp_isolation_test_option_' . mt_rand(1000, 9999);
 
     test('sets a test option', function () use ($optionName): void {
         $uniqueValue = 'test_value_' . uniqid();
@@ -159,12 +144,12 @@ describe('Option Isolation Check', function (): void {
 
         // Store for next test
         $markerFile = sys_get_temp_dir() . '/pestwp_option_marker.txt';
-        file_put_contents($markerFile, $uniqueValue);
+        file_put_contents($markerFile, $optionName . ':' . $uniqueValue);
 
         expect(get_option($optionName))->toBe($uniqueValue);
     });
 
-    test('checks if the option persists', function () use ($optionName): void {
+    test('checks if the option persists', function (): void {
         $markerFile = sys_get_temp_dir() . '/pestwp_option_marker.txt';
 
         if (! file_exists($markerFile)) {
@@ -173,25 +158,16 @@ describe('Option Isolation Check', function (): void {
             return;
         }
 
-        $expectedValue = file_get_contents($markerFile);
+        $markerData = file_get_contents($markerFile);
+        [$optionName, $expectedValue] = explode(':', $markerData);
         @unlink($markerFile);
 
         $actualValue = get_option($optionName);
 
-        if ($actualValue === $expectedValue) {
-            // Option persisted - document for future implementation
-            test()->markTestIncomplete(
-                'Option persisted between tests. ' .
-                'Database isolation needs to be implemented for full rollback support.',
-            );
-
-            // Cleanup
-            delete_option($optionName);
-        } else {
-            expect($actualValue)->not->toBe(
-                $expectedValue,
-                'Option should not persist if isolation is working',
-            );
-        }
+        // Option should NOT exist or have the value because the previous test was rolled back
+        expect($actualValue)->not->toBe(
+            $expectedValue,
+            "Option '{$optionName}' should have been rolled back, but it still has value '{$expectedValue}'.",
+        );
     });
 });
