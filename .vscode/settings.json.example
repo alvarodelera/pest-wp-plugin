@@ -1,41 +1,55 @@
 {
-    "php.validate.executablePath": "C:\\Users\\iraul\\scoop\\apps\\php\\current\\php.exe",
+    // PHP executable path - update to your local PHP 8.4+ installation
+    "php.validate.executablePath": "/path/to/php",
+
     "[php]": {
         "editor.defaultFormatter": "open-southeners.laravel-pint",
         "editor.formatOnSave": true
     },
+
     "files.exclude": {
         "**/vendor": true,
         "**/.pest": true,
         "**/phpstan.cache": true
     },
+
     "search.exclude": {
         "**/vendor": true,
         "**/.pest": true,
         "**/phpstan.cache": true
     },
+
+    // Laravel Pint (code style)
     "laravel-pint.enable": true,
     "laravel-pint.configPath": "pint.json",
     "laravel-pint.executablePath": "vendor/bin/pint",
+
+    // PHPStan (static analysis)
     "phpstan.enabled": true,
     "phpstan.configFile": "phpstan.neon",
     "phpstan.memoryLimit": "2G",
     "phpstan.binPath": "vendor/bin/phpstan",
+
     "editor.codeActionsOnSave": {
         "source.organizeImports": "explicit"
     },
+
+    // Pest PHP
     "pest.binary": "vendor/bin/pest",
+
+    // PHP settings
     "php.suggest.basic": false,
     "emmet.excludeLanguages": ["php"],
 
     // Disable PHPCS if you're using Pint
     "phpcs.enable": false,
-    "phpcs.standard": "./phpcs.xml",
 
-    // Intelephense - include stubs and scan vendor for Pest
+    // Intelephense settings
     "intelephense.environment.includePaths": [
         "vendor/pestphp/pest/src",
-        "vendor/rector/rector"
+        "vendor/rector/rector",
+        ".pest/wordpress",
+        "vendor/phpunit/phpunit/src/Framework"
     ],
     "intelephense.files.exclude": [
         "**/.git/**",

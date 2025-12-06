@@ -6,6 +6,7 @@ package-lock.json
 
 # IDE
 .idea/
+.vscode/
 *.sublime-project
 *.sublime-workspace
 
@@ -18,10 +19,11 @@ package-lock.json
 coverage/
 .coverage/
 
-# Playwright
+# Playwright / Browser Testing
 playwright-report/
 test-results/
 .auth/
+storage-state.json
 
 # PHPStan
 phpstan.cache/
@@ -32,6 +34,9 @@ phpstan.cache/
 # OS files
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
+*~
 
 # Environment
 .env
@@ -47,3 +52,8 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Internal development docs (not for public repo)
+project-definition.md
+project-task-list.md
+
