@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] - 2025-12-06
+## [0.1.0] - 2025-12-06
 
 ### Added
 
@@ -38,5 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pest v4.0+
 - PHPUnit 12+
 
-[Unreleased]: https://github.com/alvarodelera/pest-wp-plugin/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/alvarodelera/pest-wp-plugin/releases/tag/v1.0.0
+### Notes
+
+This is the initial development release (0.x). The API may change based on feedback.
+When stable, version 1.0.0 will be released.
+
+[Unreleased]: https://github.com/alvarodelera/pest-wp-plugin/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/alvarodelera/pest-wp-plugin/releases/tag/v0.1.0
