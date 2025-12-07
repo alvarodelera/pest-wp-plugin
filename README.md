@@ -347,16 +347,22 @@ Use browser tests for:
 ```php
 // tests/Browser/AdminTest.php
 it('can create post from admin', function () {
-    $this->browse(function ($browser) {
-        $browser->visit(loginUrl())
-            ->type('user_login', 'admin')
-            ->type('user_pass', 'password')
-            ->press('Log In')
-            ->visit(newPostUrl())
-            ->type(postTitleSelector(), 'My Post')
-            ->click(publishButtonSelector())
-            ->waitForText('Post published');
-    });
+    $config = browser();
+    
+    // Login first
+    visit($config['base_url'] . loginUrl())
+        ->type('user_login', $config['admin_user'])
+        ->type('user_pass', $config['admin_password'])
+        ->press('Log In')
+        ->assertPathBeginsWith('/wp-admin');
+    
+    // Create post
+    visit($config['base_url'] . newPostUrl())
+        ->type(postTitleSelector(), 'My Post')
+        ->click(publishButtonSelector())
+        ->wait(1)
+        ->click(publishButtonSelector())
+        ->assertSee('Post published');
 });
 ```
 
@@ -707,26 +713,23 @@ use function PestWP\Functions\getBrowserConfig;
 it('can log into WordPress dashboard', function () {
     $config = getBrowserConfig();
 
-    $this->browse(function ($browser) use ($config) {
-        $browser->visit($config['base_url'] . '/wp-login.php')
-            ->type('user_login', $config['admin_user'])
-            ->type('user_pass', $config['admin_password'])
-            ->press('Log In')
-            ->waitForLocation('/wp-admin/')
-            ->assertSee('Dashboard');
-    });
+    visit($config['base_url'] . '/wp-login.php')
+        ->type('user_login', $config['admin_user'])
+        ->type('user_pass', $config['admin_password'])
+        ->press('Log In')
+        ->assertPathBeginsWith('/wp-admin')
+        ->assertSee('Dashboard');
 });
 
 it('can create a new post', function () {
     $config = getBrowserConfig();
 
-    $this->browse(function ($browser) use ($config) {
-        $browser->visit($config['base_url'] . '/wp-admin/post-new.php')
-            ->type('[aria-label="Add title"]', 'My New Post')
-            ->press('Publish')
-            ->press('Publish') // Confirm
-            ->waitForText('Post published');
-    });
+    visit($config['base_url'] . '/wp-admin/post-new.php')
+        ->type('[aria-label="Add title"]', 'My New Post')
+        ->press('Publish')
+        ->wait(1)
+        ->press('Publish') // Confirm
+        ->assertSee('Post published');
 });
 ```
 
@@ -910,14 +913,15 @@ use function PestWP\Functions\blockSelector;
 use function PestWP\Functions\editorNoticeSelector;
 
 it('can create a post using locators', function () {
-    $this->browse(function ($browser) {
-        $browser->visit(newPostUrl())
-            ->waitFor(postTitleSelector())
-            ->type(postTitleSelector(), 'My Post')
-            ->click(publishButtonSelector())
-            ->waitFor(editorNoticeSelector())
-            ->assertSee('Post published');
-    });
+    $config = browser();
+    
+    visit($config['base_url'] . newPostUrl())
+        ->wait(1) // Wait for Gutenberg to load
+        ->type(postTitleSelector(), 'My Post')
+        ->click(publishButtonSelector())
+        ->wait(1)
+        ->click(publishButtonSelector())
+        ->assertSee('Post published');
 });
 
 // Target specific blocks

@@ -82,32 +82,49 @@ Crea un archivo en `tests/Browser/`:
 ```php
 <?php
 
-use function Pest\Laravel\browse;
+declare(strict_types=1);
 
 it('can access WordPress dashboard', function () {
-    browse(function ($browser) {
-        $config = browser();
-        
-        $browser->visit($config['base_url'] . '/wp-login.php')
-            ->type('user_login', $config['admin_user'])
-            ->type('user_pass', $config['admin_password'])
-            ->press('Log In')
-            ->waitForLocation('/wp-admin/')
-            ->assertSee('Dashboard');
-    });
+    $config = browser();
+    
+    visit($config['base_url'] . '/wp-login.php')
+        ->type('user_login', $config['admin_user'])
+        ->type('user_pass', $config['admin_password'])
+        ->press('Log In')
+        ->assertPathBeginsWith('/wp-admin')
+        ->assertSee('Dashboard');
 });
 
 it('can create a new post', function () {
-    browse(function ($browser) {
-        $config = browser();
-        
-        $browser->visit($config['base_url'] . '/wp-admin/post-new.php')
-            ->type('[aria-label="Add title"]', 'My Test Post')
-            ->press('Publish')
-            ->press('Publish') // Confirm
-            ->waitForText('Post published');
-    });
+    $config = browser();
+    
+    visit($config['base_url'] . '/wp-admin/post-new.php')
+        ->type('[aria-label="Add title"]', 'My Test Post')
+        ->press('Publish')
+        ->wait(1)
+        ->press('Publish') // Confirm
+        ->assertSee('Post published');
 });
+```
+
+### Sintaxis de Pest Browser
+
+Pest Browser usa `visit()` que retorna un objeto `$page` con métodos encadenables:
+
+```php
+// Visita simple
+$page = visit('/');
+$page->assertSee('Welcome');
+
+// Encadenado
+visit('/wp-admin/')
+    ->click('Posts')
+    ->assertSee('All Posts');
+
+// Con configuración
+visit('/')
+    ->on()->mobile()     // Viewport móvil
+    ->inDarkMode();      // Modo oscuro
 ```
 
 ### Autenticación Persistente
@@ -124,12 +141,10 @@ beforeEach(function () {
 });
 
 it('can access admin area when logged in', function () {
-    browse(function ($browser) {
-        $config = browser();
-        
-        $browser->visit($config['base_url'] . '/wp-admin/')
-            ->assertSee('Dashboard');
-    });
+    $config = browser();
+    
+    visit($config['base_url'] . '/wp-admin/')
+        ->assertSee('Dashboard');
 });
 ```
 
@@ -152,18 +167,28 @@ echo $config['admin_password']; // password
 Pest Browser Testing proporciona una API fluida para interactuar con el navegador:
 
 ```php
-browse(function ($browser) {
-    $browser
-        ->visit('/url')              // Navegar a URL
-        ->type('selector', 'text')   // Escribir en input
-        ->press('Button Text')       // Click en botón
-        ->click('selector')          // Click en selector
-        ->assertSee('text')          // Verificar texto visible
-        ->assertDontSee('text')      // Verificar texto no visible
-        ->waitForText('text')        // Esperar texto
-        ->waitForLocation('/url')    // Esperar navegación
-        ->screenshot('nombre');      // Tomar screenshot
-});
+$page = visit('/');
+
+// Navegación
+$page->navigate('/other-page');
+
+// Interacción con formularios
+$page->type('selector', 'text')      // Escribir en input
+    ->press('Button Text')            // Click en botón
+    ->click('selector')               // Click en selector
+    ->check('checkbox')               // Marcar checkbox
+    ->select('dropdown', 'value');    // Seleccionar opción
+
+// Assertions
+$page->assertSee('text')              // Verificar texto visible
+    ->assertDontSee('text')           // Verificar texto no visible
+    ->assertPresent('selector')       // Verificar elemento existe
+    ->assertValue('input', 'value')   // Verificar valor de input
+    ->assertPathIs('/expected');      // Verificar URL
+
+// Utilidades
+$page->wait(2)                        // Esperar 2 segundos
+    ->screenshot('nombre');           // Tomar screenshot
 ```
 
 Para más métodos, consulta la [documentación oficial de Pest Browser Testing](https://pestphp.com/docs/browser-testing).
@@ -172,13 +197,16 @@ Para más métodos, consulta la [documentación oficial de Pest Browser Testing]
 
 ### Configurar Navegadores
 
-Por defecto, Pest usa Chromium. Puedes cambiar esto en `tests/Pest.php`:
+Por defecto, Pest usa Chrome. Puedes cambiar esto en `tests/Pest.php`:
 
 ```php
 // En tests/Pest.php
-uses()->beforeEach(function () {
-    // Configuración adicional del browser
-})->in('Browser');
+pest()->browser()
+    ->inFirefox();  // Usar Firefox en lugar de Chrome
+
+// O Safari
+pest()->browser()
+    ->inSafari();
 ```
 
 ## 📊 Reports y Debugging
@@ -192,7 +220,7 @@ Los screenshots se guardan automáticamente en failures:
 ./vendor/bin/pest --browser
 
 # Screenshots se guardan en:
-# tests/.pest/screenshots/
+# tests/Browser/Screenshots/
 ```
 
 ### Debugging
@@ -201,10 +229,18 @@ Los screenshots se guardan automáticamente en failures:
 # Modo headed (navegador visible)
 ./vendor/bin/pest --browser --headed
 
-# Con pausa para inspección
-browse(function ($browser) {
-    $browser->visit('/wp-admin/')
-        ->pause(); // Pausar ejecución para inspeccionar
+# Modo debug (pausa en errores, abre navegador)
+./vendor/bin/pest --debug
+```
+
+Para pausar durante un test:
+
+```php
+it('debugs a page', function () {
+    $config = browser();
+    
+    $page = visit($config['base_url'] . '/wp-admin/')
+        ->debug(); // Pausa ejecución para inspeccionar
 });
 ```
 
@@ -219,27 +255,28 @@ browse(function ($browser) {
 ### Mejores Prácticas para Selectores
 
 ```php
-browse(function ($browser) {
-    // ✅ Bueno: Usar texto visible
-    $browser->press('Publish');
-    
-    // ✅ Bueno: Usar atributos ARIA
-    $browser->type('[aria-label="Add title"]', 'My Post');
-    
-    // ⚠️ Evitar: Selectores frágiles
-    $browser->click('.wp-block-post-title');
-});
+$page = visit('/wp-admin/');
+
+// ✅ Bueno: Usar texto visible
+$page->press('Publish');
+
+// ✅ Bueno: Usar atributos ARIA
+$page->type('[aria-label="Add title"]', 'My Post');
+
+// ✅ Bueno: Usar data-testid (con atajo @)
+$page->click('@save-button'); // Equivale a [data-testid="save-button"]
+
+// ⚠️ Evitar: Selectores frágiles
+$page->click('.wp-block-post-title');
 ```
 
-### Esperas Explícitas
+### Esperas
 
 ```php
-browse(function ($browser) {
-    $browser->visit('/wp-admin/post-new.php')
-        ->waitForText('Add title')     // Esperar texto
-        ->waitFor('.editor-post-title') // Esperar selector
-        ->waitForLocation('/wp-admin/'); // Esperar URL
-});
+$page = visit('/wp-admin/post-new.php')
+    ->wait(2)                              // Esperar 2 segundos
+    ->assertPresent('.editor-post-title')  // Verificar que existe
+    ->assertSee('Add title');              // Verificar texto visible
 ```
 
 ## 🐛 Troubleshooting
