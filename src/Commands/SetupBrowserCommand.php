@@ -68,8 +68,8 @@ class SetupBrowserCommand
     {
         $dir = dirname($this->configPath);
 
-        if (! is_dir($dir)) {
-            mkdir($dir, 0755, true);
+        if (! is_dir($dir) && ! @mkdir($dir, 0755, true) && ! is_dir($dir)) {
+            throw new RuntimeException("Failed to create directory: $dir");
         }
 
         if (! file_exists($this->configPath)) {

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace PestWP\Functions;
 
+use PestWP\Fixtures\FixtureManager;
 use PestWP\Mock\FunctionMock;
 use PestWP\Mock\HookMock;
 use PestWP\Mock\HTTPMock;
 use PestWP\Mock\TimeMock;
-use PestWP\Fixtures\FixtureManager;
 use PestWP\Snapshot\SnapshotManager;
 
 /**

@@ -401,7 +401,7 @@ final class RestClient
         $pattern = (string) preg_replace(
             '/\\\\\(\\\\\?P<([^>]+)>[^\)]+\\\\\)/',
             '(?P<$1>[^/]+)',
-            $pattern
+            $pattern,
         );
 
         return '#^' . $pattern . '$#';
@@ -416,7 +416,7 @@ final class RestClient
     {
         if (! function_exists('rest_get_server')) {
             throw new RuntimeException(
-                'WordPress REST API is not available. Ensure WordPress is loaded and REST API is initialized.'
+                'WordPress REST API is not available. Ensure WordPress is loaded and REST API is initialized.',
             );
         }
     }

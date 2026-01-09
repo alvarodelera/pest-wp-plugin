@@ -494,7 +494,7 @@ final class HookMock
                 'Expected hook "%s" to be called %d time(s), but it was called %d time(s)',
                 $this->hook,
                 $this->expectedCalls,
-                $this->callCount
+                $this->callCount,
             ));
         }
 

@@ -59,3 +59,8 @@ project-task-list.md
 
 # Internal READMEs (keep only root README.md)
 src/**/README.md
+
+# Internal scripts
+generate_js.ps1
+phpstan.ps1
+

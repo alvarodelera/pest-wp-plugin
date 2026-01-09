@@ -518,7 +518,7 @@ final class FunctionMock
                 'Expected %s to be called %d time(s), but it was called %d time(s)',
                 $this->function,
                 $this->expectedCalls,
-                $this->callCount
+                $this->callCount,
             ));
         }
 
@@ -527,7 +527,7 @@ final class FunctionMock
                 'Expected %s to be called at least %d time(s), but it was called %d time(s)',
                 $this->function,
                 $this->minCalls,
-                $this->callCount
+                $this->callCount,
             ));
         }
 
@@ -536,7 +536,7 @@ final class FunctionMock
                 'Expected %s to be called at most %d time(s), but it was called %d time(s)',
                 $this->function,
                 $this->maxCalls,
-                $this->callCount
+                $this->callCount,
             ));
         }
 

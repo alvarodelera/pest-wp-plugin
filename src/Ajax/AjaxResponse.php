@@ -28,7 +28,8 @@ final class AjaxResponse implements ArrayAccess, JsonSerializable
         private readonly array $data,
         private readonly string $rawOutput = '',
         private readonly int $statusCode = 200,
-    ) {}
+    ) {
+    }
 
     /**
      * Create a successful AJAX response.

@@ -7,7 +7,12 @@ use PestWP\Commands\SetupBrowserCommand;
 describe('Setup Browser Command', function () {
     beforeEach(function () {
         $this->tempDir = sys_get_temp_dir() . '/pest-wp-test-' . uniqid();
-        mkdir($this->tempDir, 0755, true);
+        if (PHP_OS_FAMILY === 'Windows' && str_starts_with($this->tempDir, 'C:\\Windows\\TEMP')) {
+            $this->tempDir = dirname(__DIR__, 3) . '/.pest/tests/setup-' . uniqid();
+        }
+        if (! is_dir($this->tempDir)) {
+            mkdir($this->tempDir, 0755, true);
+        }
         $this->configPath = $this->tempDir . '/Pest.php';
         $this->command = new SetupBrowserCommand($this->configPath);
     });

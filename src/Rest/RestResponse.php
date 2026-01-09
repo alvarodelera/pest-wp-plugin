@@ -26,7 +26,8 @@ final class RestResponse implements ArrayAccess, JsonSerializable
         private readonly int $status,
         private readonly array $data,
         private readonly array $headers = [],
-    ) {}
+    ) {
+    }
 
     /**
      * Create a RestResponse from a WP_REST_Response object.

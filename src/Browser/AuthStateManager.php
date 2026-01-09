@@ -61,7 +61,7 @@ class AuthStateManager
     public function ensureStateDirectory(): void
     {
         if (! is_dir($this->statePath)) {
-            if (! mkdir($this->statePath, 0755, true)) {
+            if (! @mkdir($this->statePath, 0755, true) && ! is_dir($this->statePath)) {
                 throw new RuntimeException("Failed to create state directory: {$this->statePath}");
             }
         }

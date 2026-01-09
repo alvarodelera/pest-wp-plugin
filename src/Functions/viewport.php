@@ -448,7 +448,7 @@ function allViewports(): array
     return array_merge(
         mobileViewports(),
         tabletViewports(),
-        desktopViewports()
+        desktopViewports(),
     );
 }
 
@@ -477,6 +477,7 @@ function responsiveViewports(): array
 function getViewport(string $name): ?array
 {
     $all = allViewports();
+
     return $all[$name] ?? null;
 }
 
@@ -495,7 +496,7 @@ function createViewport(
     int $height,
     bool $isMobile = false,
     bool $hasTouch = false,
-    ?float $deviceScaleFactor = null
+    ?float $deviceScaleFactor = null,
 ): array {
     $viewport = [
         'width' => $width,

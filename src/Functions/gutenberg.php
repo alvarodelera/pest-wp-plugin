@@ -27,6 +27,7 @@ function paragraphBlockSelector(?int $index = null): string
     if ($index !== null) {
         return "{$base}:nth-of-type(" . ($index + 1) . ')';
     }
+
     return $base;
 }
 
@@ -41,6 +42,7 @@ function headingBlockSelector(?int $level = null): string
     if ($level !== null) {
         return "[data-type='core/heading'] h{$level}, .wp-block-heading h{$level}";
     }
+
     return "[data-type='core/heading'], .wp-block-heading";
 }
 
@@ -58,6 +60,7 @@ function listBlockSelector(string $type = ''): string
     if ($type === 'unordered') {
         return "[data-type='core/list'] ul, .wp-block-list ul";
     }
+
     return "[data-type='core/list'], .wp-block-list";
 }
 
@@ -231,6 +234,7 @@ function columnBlockSelector(?int $index = null): string
     if ($index !== null) {
         return "{$base}:nth-of-type(" . ($index + 1) . ')';
     }
+
     return $base;
 }
 
@@ -593,6 +597,7 @@ function templatePartBlockSelector(string $slug = ''): string
     if ($slug !== '') {
         return "[data-type='core/template-part'][data-slug='{$slug}'], .wp-block-template-part";
     }
+
     return "[data-type='core/template-part'], .wp-block-template-part";
 }
 
@@ -656,6 +661,7 @@ function embedBlockSelector(string $provider = ''): string
         return "[data-type='core/embed'][data-provider-name='{$provider}'], " .
                ".wp-block-embed.is-provider-{$provider}";
     }
+
     return "[data-type='core/embed'], .wp-block-embed";
 }
 
@@ -730,7 +736,7 @@ function blockMoverSelector(): string
  */
 function blockOptionsMenuSelector(): string
 {
-    return ".block-editor-block-settings-menu__toggle, " .
+    return '.block-editor-block-settings-menu__toggle, ' .
            "[aria-label='Options'], " .
            "[aria-label='More options']";
 }
@@ -824,9 +830,9 @@ function linkButtonSelector(): string
  */
 function linkInputSelector(): string
 {
-    return ".block-editor-link-control__search-input input, " .
+    return '.block-editor-link-control__search-input input, ' .
            "[aria-label='URL'] input, " .
-           ".components-form-token-field__input";
+           '.components-form-token-field__input';
 }
 
 /**
@@ -847,7 +853,7 @@ function documentSettingsToggleSelector(): string
  */
 function visibilityControlSelector(): string
 {
-    return ".editor-post-visibility__toggle, " .
+    return '.editor-post-visibility__toggle, ' .
            "button:has-text('Visibility')";
 }
 
@@ -858,7 +864,7 @@ function visibilityControlSelector(): string
  */
 function scheduleControlSelector(): string
 {
-    return ".editor-post-schedule__toggle, " .
+    return '.editor-post-schedule__toggle, ' .
            "button:has-text('Immediately'), " .
            "button:has-text('Publish:')";
 }
@@ -870,8 +876,8 @@ function scheduleControlSelector(): string
  */
 function featuredImageControlSelector(): string
 {
-    return ".editor-post-featured-image, " .
-           ".editor-post-featured-image__toggle";
+    return '.editor-post-featured-image, ' .
+           '.editor-post-featured-image__toggle';
 }
 
 /**
@@ -881,7 +887,7 @@ function featuredImageControlSelector(): string
  */
 function excerptPanelSelector(): string
 {
-    return ".editor-post-excerpt, " .
+    return '.editor-post-excerpt, ' .
            ".components-panel__body:has-text('Excerpt')";
 }
 
@@ -892,6 +898,6 @@ function excerptPanelSelector(): string
  */
 function discussionPanelSelector(): string
 {
-    return ".editor-post-discussion-panel, " .
+    return '.editor-post-discussion-panel, ' .
            ".components-panel__body:has-text('Discussion')";
 }

@@ -431,7 +431,7 @@ final class HTTPMock
         $regex = str_replace(
             ['*', '/'],
             ['.*', '\/'],
-            $pattern
+            $pattern,
         );
 
         return (bool) preg_match('/^' . $regex . '$/i', $url);

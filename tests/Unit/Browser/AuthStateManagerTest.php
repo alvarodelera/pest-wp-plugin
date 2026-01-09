@@ -7,6 +7,9 @@ use PestWP\Browser\AuthStateManager;
 describe('Auth State Manager', function () {
     beforeEach(function () {
         $this->tempDir = sys_get_temp_dir() . '/pest-wp-auth-test-' . uniqid();
+        if (PHP_OS_FAMILY === 'Windows' && str_starts_with($this->tempDir, 'C:\\Windows\\TEMP')) {
+            $this->tempDir = dirname(__DIR__, 3) . '/.pest/tests/auth-' . uniqid();
+        }
         $this->manager = new AuthStateManager($this->tempDir, 3600);
     });
 

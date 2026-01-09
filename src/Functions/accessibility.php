@@ -39,7 +39,7 @@ namespace PestWP\Functions;
 function checkImagesWithoutAlt(string $html): array
 {
     $violations = [];
-    
+
     // Match img tags without alt attribute
     if (preg_match_all('/<img\s+(?![^>]*\balt\s*=)[^>]*>/i', $html, $matches)) {
         foreach ($matches[0] as $img) {
@@ -50,7 +50,7 @@ function checkImagesWithoutAlt(string $html): array
             ];
         }
     }
-    
+
     // Match img tags with empty alt (only a warning for decorative images)
     if (preg_match_all('/<img\s+[^>]*alt\s*=\s*["\']["\'][^>]*>/i', $html, $matches)) {
         foreach ($matches[0] as $img) {
@@ -62,7 +62,7 @@ function checkImagesWithoutAlt(string $html): array
             ];
         }
     }
-    
+
     return $violations;
 }
 
@@ -75,7 +75,7 @@ function checkImagesWithoutAlt(string $html): array
 function checkInputsWithoutLabels(string $html): array
 {
     $violations = [];
-    
+
     // Find all input elements
     if (preg_match_all('/<input\s+[^>]*>/i', $html, $matches)) {
         foreach ($matches[0] as $input) {
@@ -83,12 +83,12 @@ function checkInputsWithoutLabels(string $html): array
             if (preg_match('/type\s*=\s*["\']?(hidden|submit|button|image|reset)["\']?/i', $input)) {
                 continue;
             }
-            
+
             // Check for aria-label or aria-labelledby
             if (preg_match('/aria-label(?:ledby)?\s*=/i', $input)) {
                 continue;
             }
-            
+
             // Check for id and corresponding label
             if (preg_match('/id\s*=\s*["\']?([^"\'>\s]+)["\']?/i', $input, $idMatch)) {
                 $id = preg_quote($idMatch[1], '/');
@@ -96,12 +96,12 @@ function checkInputsWithoutLabels(string $html): array
                     continue;
                 }
             }
-            
+
             // Check if input is wrapped in label
             if (preg_match('/<label[^>]*>.*?' . preg_quote($input, '/') . '.*?<\/label>/is', $html)) {
                 continue;
             }
-            
+
             $violations[] = [
                 'element' => $input,
                 'issue' => 'Form input missing associated label',
@@ -109,7 +109,7 @@ function checkInputsWithoutLabels(string $html): array
             ];
         }
     }
-    
+
     return $violations;
 }
 
@@ -122,9 +122,9 @@ function checkInputsWithoutLabels(string $html): array
 function checkDocumentLanguage(string $html): array
 {
     $violations = [];
-    
+
     if (preg_match('/<html[^>]*>/i', $html, $match)) {
-        if (!preg_match('/lang\s*=\s*["\'][^"\']+["\']/i', $match[0])) {
+        if (! preg_match('/lang\s*=\s*["\'][^"\']+["\']/i', $match[0])) {
             $violations[] = [
                 'element' => $match[0],
                 'issue' => 'Document missing lang attribute on html element',
@@ -132,7 +132,7 @@ function checkDocumentLanguage(string $html): array
             ];
         }
     }
-    
+
     return $violations;
 }
 
@@ -145,15 +145,15 @@ function checkDocumentLanguage(string $html): array
 function checkPageTitle(string $html): array
 {
     $violations = [];
-    
-    if (!preg_match('/<title[^>]*>[^<]+<\/title>/i', $html)) {
+
+    if (! preg_match('/<title[^>]*>[^<]+<\/title>/i', $html)) {
         $violations[] = [
             'element' => '<head>',
             'issue' => 'Document missing title element',
             'impact' => 'serious',
         ];
     }
-    
+
     return $violations;
 }
 
@@ -166,7 +166,7 @@ function checkPageTitle(string $html): array
 function checkHeadingHierarchy(string $html): array
 {
     $violations = [];
-    
+
     // Extract all headings with their levels
     if (preg_match_all('/<h([1-6])[^>]*>.*?<\/h\1>/is', $html, $matches, PREG_OFFSET_CAPTURE)) {
         $levels = [];
@@ -176,7 +176,7 @@ function checkHeadingHierarchy(string $html): array
                 'element' => $matches[0][$index][0],
             ];
         }
-        
+
         // Check for skipped heading levels
         $previousLevel = 0;
         foreach ($levels as $heading) {
@@ -190,9 +190,9 @@ function checkHeadingHierarchy(string $html): array
             }
             $previousLevel = $level;
         }
-        
+
         // Check if first heading is not h1
-        if (!empty($levels) && $levels[0]['level'] !== 1) {
+        if (! empty($levels) && $levels[0]['level'] !== 1) {
             $violations[] = [
                 'element' => $levels[0]['element'],
                 'issue' => 'First heading is not h1',
@@ -200,7 +200,7 @@ function checkHeadingHierarchy(string $html): array
             ];
         }
     }
-    
+
     return $violations;
 }
 
@@ -213,7 +213,7 @@ function checkHeadingHierarchy(string $html): array
 function checkLinksWithoutText(string $html): array
 {
     $violations = [];
-    
+
     // Find all anchor tags
     if (preg_match_all('/<a\s+[^>]*>.*?<\/a>/is', $html, $matches)) {
         foreach ($matches[0] as $link) {
@@ -221,17 +221,17 @@ function checkLinksWithoutText(string $html): array
             if (preg_match('/aria-label\s*=\s*["\'][^"\']+["\']/i', $link)) {
                 continue;
             }
-            
+
             // Check for visible text content (excluding whitespace)
             $textContent = preg_replace('/<[^>]+>/', '', $link);
             $textContent = trim($textContent ?? '');
-            
+
             if ($textContent === '') {
                 // Check for images with alt text inside
                 if (preg_match('/<img[^>]+alt\s*=\s*["\'][^"\']+["\']/i', $link)) {
                     continue;
                 }
-                
+
                 $violations[] = [
                     'element' => $link,
                     'issue' => 'Link has no accessible text',
@@ -240,7 +240,7 @@ function checkLinksWithoutText(string $html): array
             }
         }
     }
-    
+
     return $violations;
 }
 
@@ -253,7 +253,7 @@ function checkLinksWithoutText(string $html): array
 function checkButtonsWithoutText(string $html): array
 {
     $violations = [];
-    
+
     // Find all button tags
     if (preg_match_all('/<button\s*[^>]*>.*?<\/button>/is', $html, $matches)) {
         foreach ($matches[0] as $button) {
@@ -261,11 +261,11 @@ function checkButtonsWithoutText(string $html): array
             if (preg_match('/aria-label\s*=\s*["\'][^"\']+["\']/i', $button)) {
                 continue;
             }
-            
+
             // Check for visible text content
             $textContent = preg_replace('/<[^>]+>/', '', $button);
             $textContent = trim($textContent ?? '');
-            
+
             if ($textContent === '') {
                 $violations[] = [
                     'element' => $button,
@@ -275,7 +275,7 @@ function checkButtonsWithoutText(string $html): array
             }
         }
     }
-    
+
     return $violations;
 }
 
@@ -288,16 +288,16 @@ function checkButtonsWithoutText(string $html): array
 function checkAriaLandmarks(string $html): array
 {
     $violations = [];
-    
+
     // Check for main landmark
-    if (!preg_match('/<main[^>]*>|role\s*=\s*["\']main["\']/i', $html)) {
+    if (! preg_match('/<main[^>]*>|role\s*=\s*["\']main["\']/i', $html)) {
         $violations[] = [
             'element' => '<body>',
             'issue' => 'Document missing main landmark',
             'impact' => 'moderate',
         ];
     }
-    
+
     // Check for navigation landmark (only if nav-like content exists)
     if (preg_match('/<nav[^>]*>|role\s*=\s*["\']navigation["\']/i', $html)) {
         // Has navigation, good
@@ -308,7 +308,7 @@ function checkAriaLandmarks(string $html): array
             'impact' => 'minor',
         ];
     }
-    
+
     return $violations;
 }
 
@@ -321,7 +321,7 @@ function checkAriaLandmarks(string $html): array
 function checkTablesWithoutHeaders(string $html): array
 {
     $violations = [];
-    
+
     // Find all tables
     if (preg_match_all('/<table[^>]*>.*?<\/table>/is', $html, $matches)) {
         foreach ($matches[0] as $table) {
@@ -329,9 +329,9 @@ function checkTablesWithoutHeaders(string $html): array
             if (preg_match('/role\s*=\s*["\']presentation["\']/i', $table)) {
                 continue;
             }
-            
+
             // Check for th elements
-            if (!preg_match('/<th[^>]*>/i', $table)) {
+            if (! preg_match('/<th[^>]*>/i', $table)) {
                 $violations[] = [
                     'element' => substr($table, 0, 100) . '...',
                     'issue' => 'Data table missing header cells (th)',
@@ -340,7 +340,7 @@ function checkTablesWithoutHeaders(string $html): array
             }
         }
     }
-    
+
     return $violations;
 }
 
@@ -354,7 +354,7 @@ function checkTablesWithoutHeaders(string $html): array
 function checkInlineColorContrast(string $html): array
 {
     $violations = [];
-    
+
     // Check for very light colors on white backgrounds (basic heuristic)
     if (preg_match_all('/style\s*=\s*["\'][^"\']*color\s*:\s*(#[fFeE]{3,6}|white|rgb\s*\(\s*2[45]\d|lightgray|lightgrey)[^"\']*["\']/i', $html, $matches)) {
         foreach ($matches[0] as $style) {
@@ -365,7 +365,7 @@ function checkInlineColorContrast(string $html): array
             ];
         }
     }
-    
+
     return $violations;
 }
 
@@ -394,10 +394,10 @@ function getAccessibilityViolations(string $html, array $checks = []): array
         'tables' => 'checkTablesWithoutHeaders',
         'contrast' => 'checkInlineColorContrast',
     ];
-    
+
     $checksToRun = empty($checks) ? array_keys($allChecks) : $checks;
     $violations = [];
-    
+
     foreach ($checksToRun as $check) {
         if (isset($allChecks[$check])) {
             $function = __NAMESPACE__ . '\\' . $allChecks[$check];
@@ -405,7 +405,7 @@ function getAccessibilityViolations(string $html, array $checks = []): array
             $violations = array_merge($violations, $function($html));
         }
     }
-    
+
     return $violations;
 }
 
@@ -424,12 +424,13 @@ function getAccessibilityViolationsByImpact(string $html, string $minImpact = 's
         'serious' => 3,
         'critical' => 4,
     ];
-    
+
     $minLevel = $impactLevels[$minImpact] ?? 3;
     $violations = getAccessibilityViolations($html);
-    
+
     return array_filter($violations, function ($violation) use ($impactLevels, $minLevel) {
         $level = $impactLevels[$violation['impact']] ?? 0;
+
         return $level >= $minLevel;
     });
 }
@@ -443,6 +444,7 @@ function getAccessibilityViolationsByImpact(string $html, string $minImpact = 's
 function isAccessible(string $html): bool
 {
     $violations = getAccessibilityViolationsByImpact($html, 'critical');
+
     return empty($violations);
 }
 
@@ -457,35 +459,35 @@ function formatAccessibilityReport(array $violations): string
     if (empty($violations)) {
         return "No accessibility violations found.\n";
     }
-    
-    $report = "Accessibility Violations Found: " . count($violations) . "\n";
+
+    $report = 'Accessibility Violations Found: ' . count($violations) . "\n";
     $report .= str_repeat('=', 50) . "\n\n";
-    
+
     // Group by impact
     $grouped = [];
     foreach ($violations as $violation) {
         $grouped[$violation['impact']][] = $violation;
     }
-    
+
     $impactOrder = ['critical', 'serious', 'moderate', 'minor'];
-    
+
     foreach ($impactOrder as $impact) {
-        if (!isset($grouped[$impact])) {
+        if (! isset($grouped[$impact])) {
             continue;
         }
-        
-        $report .= strtoupper($impact) . " (" . count($grouped[$impact]) . ")\n";
+
+        $report .= strtoupper($impact) . ' (' . count($grouped[$impact]) . ")\n";
         $report .= str_repeat('-', 30) . "\n";
-        
+
         foreach ($grouped[$impact] as $index => $violation) {
-            $report .= ($index + 1) . ". " . $violation['issue'] . "\n";
+            $report .= ($index + 1) . '. ' . $violation['issue'] . "\n";
             $element = strlen($violation['element']) > 80
                 ? substr($violation['element'], 0, 80) . '...'
                 : $violation['element'];
-            $report .= "   Element: " . $element . "\n\n";
+            $report .= '   Element: ' . $element . "\n\n";
         }
     }
-    
+
     return $report;
 }
 

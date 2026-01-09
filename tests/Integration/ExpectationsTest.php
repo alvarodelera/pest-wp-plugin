@@ -88,7 +88,7 @@ describe('Custom Expectations', function () {
             $notAnError = new stdClass();
 
             expect($notAnError)->toHaveErrorCode('test');
-        })->throws(AssertionFailedError::class, 'Expected value to be a WP_Error instance');
+        })->throws(AssertionFailedError::class, 'Expected value to be a WP_Error or RestResponse instance');
     });
 
     describe('Post Meta Expectations', function () {

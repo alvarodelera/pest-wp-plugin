@@ -11,8 +11,8 @@ declare(strict_types=1);
 namespace PestWP\Expectations;
 
 use Pest\Expectation;
-use PestWP\Rest\RestResponse;
 use PestWP\Ajax\AjaxResponse;
+use PestWP\Rest\RestResponse;
 
 /**
  * Register REST API and AJAX expectations.
@@ -48,11 +48,11 @@ function registerRestAjaxExpectations(): void
 
         if ($value instanceof RestResponse) {
             expect($value->isSuccessful())->toBeTrue(
-                "Expected response to be successful, got status {$value->status()}"
+                "Expected response to be successful, got status {$value->status()}",
             );
         } elseif ($value instanceof AjaxResponse) {
             expect($value->isSuccess())->toBeTrue(
-                'Expected AJAX response to be successful'
+                'Expected AJAX response to be successful',
             );
         } else {
             throw new \InvalidArgumentException('Expected RestResponse or AjaxResponse');
@@ -70,11 +70,11 @@ function registerRestAjaxExpectations(): void
 
         if ($value instanceof RestResponse) {
             expect($value->isError())->toBeTrue(
-                "Expected response to be an error, got status {$value->status()}"
+                "Expected response to be an error, got status {$value->status()}",
             );
         } elseif ($value instanceof AjaxResponse) {
             expect($value->isError())->toBeTrue(
-                'Expected AJAX response to be an error'
+                'Expected AJAX response to be an error',
             );
         } else {
             throw new \InvalidArgumentException('Expected RestResponse or AjaxResponse');
@@ -97,29 +97,13 @@ function registerRestAjaxExpectations(): void
         /** @var RestResponse|AjaxResponse $response */
         $hasKey = $response->has($key);
         expect($hasKey)->toBeTrue(
-            "Expected response to have key '$key'"
+            "Expected response to have key '$key'",
         );
 
         if (func_num_args() > 1) {
             $gotValue = $response->get($key);
             expect($gotValue)->toBe($value);
         }
-
-        return $this;
-    });
-
-    /**
-     * Assert that a REST response has a specific error code.
-     */
-    expect()->extend('toHaveErrorCode', function (string $code): Expectation {
-        /** @var Expectation<RestResponse> $this */
-        $response = $this->value;
-
-        if (! $response instanceof RestResponse) {
-            throw new \InvalidArgumentException('Expected RestResponse');
-        }
-
-        expect($response->errorCode())->toBe($code);
 
         return $this;
     });
@@ -230,7 +214,7 @@ function registerRestAjaxExpectations(): void
             }
 
             expect($methodSupported)->toBeTrue(
-                "Expected REST route '$route' to support method '$method'"
+                "Expected REST route '$route' to support method '$method'",
             );
         }
 
@@ -267,7 +251,7 @@ function registerRestAjaxExpectations(): void
         }
 
         expect($hasAction)->toBeTrue(
-            "Expected AJAX action '$action' to be registered for: " . implode(', ', $context)
+            "Expected AJAX action '$action' to be registered for: " . implode(', ', $context),
         );
 
         return $this;

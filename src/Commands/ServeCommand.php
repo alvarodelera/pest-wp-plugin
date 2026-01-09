@@ -8,7 +8,6 @@ use PestWP\Installer\Installer;
 use RuntimeException;
 
 use function dirname;
-use function file_exists;
 use function file_put_contents;
 use function is_dir;
 use function mkdir;
@@ -211,7 +210,7 @@ PHP;
         }
 
         throw new RuntimeException(
-            sprintf('No available port found between %d and %d', $this->port, $port - 1)
+            sprintf('No available port found between %d and %d', $this->port, $port - 1),
         );
     }
 

@@ -7,7 +7,12 @@ use PestWP\Snapshot\SnapshotManager;
 beforeEach(function () {
     SnapshotManager::resetInstance();
     $this->tempDir = sys_get_temp_dir() . '/pestwp-snapshots-' . uniqid();
-    mkdir($this->tempDir, 0755, true);
+    if (PHP_OS_FAMILY === 'Windows' && str_starts_with($this->tempDir, 'C:\\Windows\\TEMP')) {
+        $this->tempDir = dirname(__DIR__, 3) . '/.pest/tests/snapshots-' . uniqid();
+    }
+    if (! is_dir($this->tempDir)) {
+        mkdir($this->tempDir, 0755, true);
+    }
 });
 
 afterEach(function () {
@@ -17,7 +22,7 @@ afterEach(function () {
     if (is_dir($this->tempDir)) {
         $files = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($this->tempDir, RecursiveDirectoryIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::CHILD_FIRST
+            RecursiveIteratorIterator::CHILD_FIRST,
         );
         foreach ($files as $file) {
             if ($file->isDir()) {
@@ -121,7 +126,7 @@ describe('SnapshotManager', function () {
 
             // Verify update was recorded
             expect($manager->getUpdatedSnapshots())->toContain(
-                $manager->getSnapshotPath('test-update')
+                $manager->getSnapshotPath('test-update'),
             );
         });
 

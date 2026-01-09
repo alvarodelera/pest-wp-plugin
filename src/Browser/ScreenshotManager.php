@@ -306,7 +306,7 @@ final class ScreenshotManager
                 'difference' => 1.0,
                 'baseline' => $baselinePath,
                 'diff' => null,
-                'message' => "No baseline exists. Run with PEST_UPDATE_SCREENSHOTS=1 to create baseline.",
+                'message' => 'No baseline exists. Run with PEST_UPDATE_SCREENSHOTS=1 to create baseline.',
             ];
         }
 
@@ -587,7 +587,7 @@ final class ScreenshotManager
      */
     private function ensureDirectory(string $path): void
     {
-        if (! is_dir($path) && ! mkdir($path, 0755, true)) {
+        if (! is_dir($path) && ! @mkdir($path, 0755, true) && ! is_dir($path)) {
             throw new RuntimeException("Failed to create directory: {$path}");
         }
     }

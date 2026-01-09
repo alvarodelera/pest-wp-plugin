@@ -22,9 +22,10 @@ function screenshots(?string $basePath = null): ScreenshotManager
 {
     if ($basePath !== null) {
         $manager = new ScreenshotManager($basePath);
+
         return $manager;
     }
-    
+
     return ScreenshotManager::getInstance();
 }
 
@@ -177,18 +178,18 @@ function resetScreenshots(): ScreenshotManager
 function videoRecordingConfig(
     string $mode = 'retain-on-failure',
     ?string $dir = null,
-    ?array $size = null
+    ?array $size = null,
 ): array {
     $config = ['mode' => $mode];
-    
+
     if ($dir !== null) {
         $config['dir'] = $dir;
     }
-    
+
     if ($size !== null) {
         $config['size'] = $size;
     }
-    
+
     return $config;
 }
 

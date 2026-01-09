@@ -312,7 +312,7 @@ final class SnapshotManager
     private function createSnapshot(string $path, string $content): void
     {
         $dir = dirname($path);
-        if (! is_dir($dir) && ! mkdir($dir, 0755, true)) {
+        if (! is_dir($dir) && ! @mkdir($dir, 0755, true) && ! is_dir($dir)) {
             throw new RuntimeException("Failed to create snapshot directory: {$dir}");
         }
 
@@ -437,7 +437,7 @@ final class SnapshotManager
      */
     private function ensureDirectory(): void
     {
-        if (! is_dir($this->snapshotsPath) && ! mkdir($this->snapshotsPath, 0755, true)) {
+        if (! is_dir($this->snapshotsPath) && ! @mkdir($this->snapshotsPath, 0755, true) && ! is_dir($this->snapshotsPath)) {
             throw new RuntimeException("Failed to create snapshots directory: {$this->snapshotsPath}");
         }
     }

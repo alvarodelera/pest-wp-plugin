@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace PestWP\Expectations;
 
+use PestWP\Rest\RestResponse;
+
 use function expect;
 use function test;
 
@@ -23,13 +25,21 @@ function registerErrorExpectations(): void
     });
 
     expect()->extend('toHaveErrorCode', function (string $code) {
-        $error = $this->value;
+        $value = $this->value;
 
-        if (! $error instanceof \WP_Error) {
-            test()->fail('Expected value to be a WP_Error instance.');
+        if ($value instanceof \WP_Error) {
+            expect($value->get_error_code())->toBe($code);
+
+            return $this;
         }
 
-        expect($error->get_error_code())->toBe($code);
+        if (class_exists(RestResponse::class) && $value instanceof RestResponse) {
+            expect($value->errorCode())->toBe($code);
+
+            return $this;
+        }
+
+        test()->fail('Expected value to be a WP_Error or RestResponse instance.');
 
         return $this;
     });

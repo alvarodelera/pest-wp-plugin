@@ -33,7 +33,7 @@ function registerMockingExpectations(): void
         }
 
         expect($mock->wasCalled())->toBeTrue(
-            sprintf('Expected %s to have been called, but it was not', $mock instanceof FunctionMock ? $mock->getFunction() : $mock->getHook())
+            sprintf('Expected %s to have been called, but it was not', $mock instanceof FunctionMock ? $mock->getFunction() : $mock->getHook()),
         );
 
         return $this;
@@ -59,8 +59,8 @@ function registerMockingExpectations(): void
                 'Expected %s to have been called %d time(s), but it was called %d time(s)',
                 $mock instanceof FunctionMock ? $mock->getFunction() : $mock->getHook(),
                 $times,
-                $mock->getCallCount()
-            )
+                $mock->getCallCount(),
+            ),
         );
 
         return $this;
@@ -84,8 +84,8 @@ function registerMockingExpectations(): void
             sprintf(
                 'Expected %s to have been called with %s',
                 $mock instanceof FunctionMock ? $mock->getFunction() : $mock->getHook(),
-                json_encode($args)
-            )
+                json_encode($args),
+            ),
         );
 
         return $this;
@@ -110,8 +110,8 @@ function registerMockingExpectations(): void
             sprintf(
                 'Expected %s to not have been called, but it was called %d time(s)',
                 $mock instanceof FunctionMock ? $mock->getFunction() : $mock->getHook(),
-                $mock->getCallCount()
-            )
+                $mock->getCallCount(),
+            ),
         );
 
         return $this;
@@ -253,7 +253,7 @@ function registerMockingExpectations(): void
         }
 
         expect($mock->wasRequested($url))->toBeTrue(
-            sprintf('Expected URL %s to have been requested', $url)
+            sprintf('Expected URL %s to have been requested', $url),
         );
 
         return $this;
@@ -275,7 +275,7 @@ function registerMockingExpectations(): void
 
         expect($mock->getRequestCount())->toBe(
             $count,
-            sprintf('Expected %d HTTP requests, but %d were made', $count, $mock->getRequestCount())
+            sprintf('Expected %d HTTP requests, but %d were made', $count, $mock->getRequestCount()),
         );
 
         return $this;

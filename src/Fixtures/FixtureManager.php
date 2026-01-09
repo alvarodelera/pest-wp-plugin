@@ -222,19 +222,19 @@ final class FixtureManager
             // Track ID for cleanup
             if (is_object($object) && property_exists($object, 'ID')) {
                 /** @var object{ID: int} $object */
-                if (!isset($this->createdIds[$type])) {
+                if (! isset($this->createdIds[$type])) {
                     $this->createdIds[$type] = [];
                 }
                 $this->createdIds[$type][] = (int) $object->ID;
             } elseif (is_array($object) && isset($object['ID'])) {
-                if (!isset($this->createdIds[$type])) {
+                if (! isset($this->createdIds[$type])) {
                     $this->createdIds[$type] = [];
                 }
                 /** @var int|string $id */
                 $id = $object['ID'];
                 $this->createdIds[$type][] = (int) $id;
             } elseif (is_int($object)) {
-                if (!isset($this->createdIds[$type])) {
+                if (! isset($this->createdIds[$type])) {
                     $this->createdIds[$type] = [];
                 }
                 $this->createdIds[$type][] = $object;

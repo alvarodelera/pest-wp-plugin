@@ -67,7 +67,7 @@ final class Expectations
                 'to not use debug functions (dd, dump, var_dump, print_r, etc.)',
                 static fn (string $path): int => self::findFirstOccurrenceLine(
                     $path,
-                    WordPressArchPreset::DEBUG_FUNCTIONS
+                    WordPressArchPreset::DEBUG_FUNCTIONS,
                 ),
             );
         });
@@ -102,7 +102,7 @@ final class Expectations
                 'to not use security-sensitive functions (eval, exec, shell_exec, etc.)',
                 static fn (string $path): int => self::findFirstOccurrenceLine(
                     $path,
-                    WordPressArchPreset::SECURITY_SENSITIVE_FUNCTIONS
+                    WordPressArchPreset::SECURITY_SENSITIVE_FUNCTIONS,
                 ),
             );
         });
@@ -137,7 +137,7 @@ final class Expectations
                 'to not use deprecated mysql_* functions',
                 static fn (string $path): int => self::findFirstOccurrenceLine(
                     $path,
-                    WordPressArchPreset::DEPRECATED_MYSQL_FUNCTIONS
+                    WordPressArchPreset::DEPRECATED_MYSQL_FUNCTIONS,
                 ),
             );
         });
@@ -172,7 +172,7 @@ final class Expectations
                 'to not use direct file functions (use WordPress Filesystem API instead)',
                 static fn (string $path): int => self::findFirstOccurrenceLine(
                     $path,
-                    WordPressArchPreset::DIRECT_FILE_FUNCTIONS
+                    WordPressArchPreset::DIRECT_FILE_FUNCTIONS,
                 ),
             );
         });
@@ -260,7 +260,7 @@ final class Expectations
                 'to not use deprecated WordPress functions',
                 static fn (string $path): int => self::findFirstOccurrenceLine(
                     $path,
-                    array_keys(WordPressArchPreset::DEPRECATED_WP_FUNCTIONS)
+                    array_keys(WordPressArchPreset::DEPRECATED_WP_FUNCTIONS),
                 ),
             );
         });
@@ -301,7 +301,7 @@ final class Expectations
                 'to follow WordPress coding standards',
                 static fn (string $path): int => self::findFirstOccurrenceLine(
                     $path,
-                    WordPressArchPreset::getAllForbiddenFunctions()
+                    WordPressArchPreset::getAllForbiddenFunctions(),
                 ),
             );
         });

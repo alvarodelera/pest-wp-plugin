@@ -224,6 +224,7 @@ final class AjaxClient
                 do_action($hookPrefix . $action);
             } catch (\Throwable $e) {
                 ob_end_clean();
+
                 throw $e;
             }
 
@@ -322,7 +323,7 @@ final class AjaxClient
     {
         if (! function_exists('do_action')) {
             throw new RuntimeException(
-                'WordPress is not available. Ensure WordPress is loaded for AJAX testing.'
+                'WordPress is not available. Ensure WordPress is loaded for AJAX testing.',
             );
         }
     }

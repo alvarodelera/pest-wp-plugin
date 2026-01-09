@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace PestWP\Arch;
 
-use Pest\Arch\SingleArchExpectation;
-use Pest\Expectation;
-
 /**
  * WordPress Architecture Preset.
  *
