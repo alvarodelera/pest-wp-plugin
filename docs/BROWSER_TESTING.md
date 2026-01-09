@@ -1,42 +1,63 @@
-# Browser Testing con Pest
+# Browser Testing with Pest
 
-Esta guía explica cómo configurar y ejecutar tests de navegador end-to-end (E2E) en WordPress usando **Pest Browser Testing** (basado en Playwright).
+This guide explains how to configure and run end-to-end (E2E) browser tests in WordPress using **Pest Browser Testing** (based on Playwright).
 
-> **Nota**: Este plugin integra el [Pest Browser Testing oficial](https://pestphp.com/docs/browser-testing) con WordPress, proporcionando helpers específicos para testing de WP.
+> **Note**: This plugin integrates the [official Pest Browser Testing](https://pestphp.com/docs/browser-testing) with WordPress, providing WordPress-specific testing helpers.
 
-## 🚀 Inicio Rápido
+## Quick Start
 
-### 1. Instalar Dependencias
+### 1. Install Dependencies
 
-El plugin ya incluye `pestphp/pest-plugin-browser`, solo necesitas instalar los navegadores:
+The plugin already includes `pestphp/pest-plugin-browser`, you just need to install the browsers:
 
 ```bash
 composer install
 ./vendor/bin/pest --browser-install
 ```
 
-### 2. Configurar Credenciales de WordPress
+### 2. Start WordPress Server
 
-Ejecuta el wizard de configuración para establecer las credenciales de tu instalación:
+Use the built-in development server (uses .pest/wordpress installation):
+
+```bash
+vendor/bin/pest-wp-serve
+```
+
+Or configure with an existing WordPress installation:
 
 ```bash
 vendor/bin/pest-setup-browser --url http://localhost:8080 --user admin --pass password
 ```
 
-Este comando creará/actualizará la función `browser()` en `tests/Pest.php` con tu configuración.
-
-### 3. Ejecutar Tests de Navegador
+### 3. Run Browser Tests
 
 ```bash
-./vendor/bin/pest --browser          # Ejecutar tests browser
-./vendor/bin/pest --browser --headed # Ejecutar con navegador visible
+./vendor/bin/pest --browser tests/Browser/     # Run browser tests
+./vendor/bin/pest --browser --headed           # Run with visible browser
 ```
 
-## 📋 Configuración
+## Configuration
 
-### Configuración Manual
+### Automatic Configuration with pest-wp-serve
 
-Si prefieres configurar manualmente, añade la función `browser()` en `tests/Pest.php`:
+The easiest way to run browser tests is using the built-in server:
+
+```bash
+# Start the server (uses .pest/wordpress)
+vendor/bin/pest-wp-serve
+
+# In another terminal, run tests
+./vendor/bin/pest --browser tests/Browser/
+```
+
+Default credentials:
+- **URL**: http://localhost:8080
+- **User**: admin
+- **Password**: password
+
+### Manual Configuration
+
+If you prefer to configure manually, add the `browser()` function in `tests/Pest.php`:
 
 ```php
 function browser(): array
@@ -49,9 +70,9 @@ function browser(): array
 }
 ```
 
-### Variables de Entorno
+### Environment Variables
 
-También puedes usar variables de entorno (se usan como fallback):
+You can also use environment variables (used as fallback):
 
 ```bash
 export WP_BASE_URL=http://localhost:8080
@@ -59,25 +80,51 @@ export WP_ADMIN_USER=admin
 export WP_ADMIN_PASSWORD=password
 ```
 
-## 🎯 Estrategia Zero-Login
+Or create a `.env.testing` file:
 
-Los tests de navegador usan la estrategia "zero-login" para optimizar la velocidad:
+```env
+WP_BASE_URL=http://localhost:8080
+WP_ADMIN_USER=admin
+WP_ADMIN_PASSWORD=password
+```
 
-1. **Global Setup**: El script `playwright/global-setup.ts` se ejecuta UNA VEZ antes de todos los tests
-2. **Autenticación**: Se autentica en WordPress y guarda el estado en `.pest/state/admin.json`
-3. **Reutilización**: Todos los tests reutilizan este estado, evitando login repetidos
+## Zero-Login Strategy
 
-### Ventajas
+Browser tests use the "zero-login" strategy to optimize speed:
 
-- ⚡ **Velocidad**: Tests cargan directamente en el dashboard (< 3s vs ~10s con login)
-- 🔒 **Seguridad**: Credenciales solo se usan en global-setup
-- 📦 **Aislamiento**: Cada test mantiene su propio contexto pero comparte la autenticación
+1. **Authentication State**: Login is performed once and the state is saved
+2. **State Storage**: Auth cookies are stored in `.pest/state/admin.json`
+3. **Reuse**: All tests reuse this state, avoiding repeated logins
 
-## ✍️ Escribir Tests con Pest Browser Testing
+### Advantages
 
-### Ejemplo Básico
+- **Speed**: Tests load directly into the dashboard (< 3s vs ~10s with login)
+- **Security**: Credentials are only used once
+- **Isolation**: Each test maintains its own context but shares authentication
 
-Crea un archivo en `tests/Browser/`:
+### Using Auth State
+
+```php
+use function PestWP\Functions\hasBrowserAuthState;
+use function PestWP\Functions\loadBrowserAuthState;
+use function PestWP\Functions\saveBrowserAuthState;
+
+// Check if stored auth exists
+if (hasBrowserAuthState()) {
+    $state = loadBrowserAuthState();
+    // Use state for authenticated requests
+}
+
+// Save auth state after login
+$state = ['cookies' => [...], 'origins' => [...]];
+saveBrowserAuthState($state);
+```
+
+## Writing Tests with Pest Browser Testing
+
+### Basic Example
+
+Create a file in `tests/Browser/`:
 
 ```php
 <?php
@@ -107,140 +154,177 @@ it('can create a new post', function () {
 });
 ```
 
-### Sintaxis de Pest Browser
+### Pest Browser Syntax
 
-Pest Browser usa `visit()` que retorna un objeto `$page` con métodos encadenables:
+Pest Browser uses `visit()` which returns a chainable `$page` object:
 
 ```php
-// Visita simple
+// Simple visit
 $page = visit('/');
 $page->assertSee('Welcome');
 
-// Encadenado
+// Chained
 visit('/wp-admin/')
     ->click('Posts')
     ->assertSee('All Posts');
 
-// Con configuración
+// With configuration
 visit('/')
-    ->on()->mobile()     // Viewport móvil
-    ->inDarkMode();      // Modo oscuro
+    ->on()->mobile()     // Mobile viewport
+    ->inDarkMode();      // Dark mode
 ```
 
-### Autenticación Persistente
+### Available Methods
 
-Para evitar login en cada test, usa `loginAs()` antes de los tests:
-
-```php
-use function PestWP\loginAs;
-use function PestWP\createUser;
-
-beforeEach(function () {
-    $admin = createUser('administrator');
-    loginAs($admin);
-});
-
-it('can access admin area when logged in', function () {
-    $config = browser();
-    
-    visit($config['base_url'] . '/wp-admin/')
-        ->assertSee('Dashboard');
-});
-```
-
-## 🛠️ Helpers de PHP
-
-El plugin proporciona helpers para trabajar con la configuración de browser:
-
-```php
-use function PestWP\Functions\getBrowserConfig;
-
-// Obtener configuración
-$config = getBrowserConfig();
-echo $config['base_url'];      // http://localhost:8080
-echo $config['admin_user'];    // admin
-echo $config['admin_password']; // password
-```
-
-### Métodos Disponibles de Pest Browser
-
-Pest Browser Testing proporciona una API fluida para interactuar con el navegador:
+Pest Browser Testing provides a fluent API for interacting with the browser:
 
 ```php
 $page = visit('/');
 
-// Navegación
+// Navigation
 $page->navigate('/other-page');
 
-// Interacción con formularios
-$page->type('selector', 'text')      // Escribir en input
-    ->press('Button Text')            // Click en botón
-    ->click('selector')               // Click en selector
-    ->check('checkbox')               // Marcar checkbox
-    ->select('dropdown', 'value');    // Seleccionar opción
+// Form interaction
+$page->type('selector', 'text')      // Type in input
+    ->press('Button Text')            // Click button by text
+    ->click('selector')               // Click by selector
+    ->check('checkbox')               // Check checkbox
+    ->select('dropdown', 'value');    // Select option
 
 // Assertions
-$page->assertSee('text')              // Verificar texto visible
-    ->assertDontSee('text')           // Verificar texto no visible
-    ->assertPresent('selector')       // Verificar elemento existe
-    ->assertValue('input', 'value')   // Verificar valor de input
-    ->assertPathIs('/expected');      // Verificar URL
+$page->assertSee('text')              // Verify visible text
+    ->assertDontSee('text')           // Verify text not visible
+    ->assertPresent('selector')       // Verify element exists
+    ->assertValue('input', 'value')   // Verify input value
+    ->assertPathIs('/expected');      // Verify URL
 
-// Utilidades
-$page->wait(2)                        // Esperar 2 segundos
-    ->screenshot('nombre');           // Tomar screenshot
+// Utilities
+$page->wait(2)                        // Wait 2 seconds
+    ->screenshot('name');             // Take screenshot
 ```
 
-Para más métodos, consulta la [documentación oficial de Pest Browser Testing](https://pestphp.com/docs/browser-testing).
+For more methods, see the [official Pest Browser Testing documentation](https://pestphp.com/docs/browser-testing).
 
-## 🎨 Configuración Avanzada
+## WP Admin Locators
 
-### Configurar Navegadores
+PestWP provides helper functions for building URLs and CSS selectors for WordPress admin UI elements.
 
-Por defecto, Pest usa Chrome. Puedes cambiar esto en `tests/Pest.php`:
+### URL Helpers
 
 ```php
-// En tests/Pest.php
-pest()->browser()
-    ->inFirefox();  // Usar Firefox en lugar de Chrome
+use function PestWP\Functions\adminUrl;
+use function PestWP\Functions\loginUrl;
+use function PestWP\Functions\newPostUrl;
+use function PestWP\Functions\editPostUrl;
+use function PestWP\Functions\postsListUrl;
 
-// O Safari
+// Build admin URLs
+loginUrl();                    // /wp-login.php
+adminUrl();                    // /wp-admin/
+adminUrl('edit.php');          // /wp-admin/edit.php
+adminUrl('my-plugin');         // /wp-admin/admin.php?page=my-plugin
+
+// Post URLs
+newPostUrl();                  // New post
+newPostUrl('page');            // New page
+editPostUrl(123);              // Edit post ID 123
+postsListUrl('post', 'draft'); // List drafts
+```
+
+### Gutenberg Selectors
+
+```php
+use function PestWP\Functions\postTitleSelector;
+use function PestWP\Functions\publishButtonSelector;
+use function PestWP\Functions\blockSelector;
+use function PestWP\Functions\editorNoticeSelector;
+
+it('can create a post using locators', function () {
+    $config = browser();
+    
+    visit($config['base_url'] . newPostUrl())
+        ->wait(1) // Wait for Gutenberg to load
+        ->type(postTitleSelector(), 'My Post')
+        ->click(publishButtonSelector())
+        ->wait(1)
+        ->click(publishButtonSelector())
+        ->assertSee('Post published');
+});
+
+// Target specific blocks
+blockSelector('core/paragraph');  // [data-type='core/paragraph']
+blockSelector('core/heading');    // [data-type='core/heading']
+```
+
+### Admin UI Selectors
+
+```php
+use function PestWP\Functions\menuSelector;
+use function PestWP\Functions\noticeSelector;
+use function PestWP\Functions\tableRowSelector;
+use function PestWP\Functions\buttonSelector;
+
+// Menu navigation
+menuSelector('Posts');           // Admin menu item
+submenuSelector('Settings', 'General'); // Submenu item
+
+// Notices
+noticeSelector('success');       // Success notices
+noticeSelector('error');         // Error notices
+
+// Data tables
+tableRowSelector('My Post');     // Row by title
+rowActionSelector('edit');       // Row action link
+```
+
+## Advanced Configuration
+
+### Configure Browsers
+
+By default, Pest uses Chrome. You can change this in `tests/Pest.php`:
+
+```php
+// In tests/Pest.php
+pest()->browser()
+    ->inFirefox();  // Use Firefox instead of Chrome
+
+// Or Safari
 pest()->browser()
     ->inSafari();
 ```
 
-## 📊 Reports y Debugging
+## Reports and Debugging
 
-### Ver Screenshots
+### View Screenshots
 
-Los screenshots se guardan automáticamente en failures:
+Screenshots are automatically saved on failures:
 
 ```bash
-# Ejecutar tests
+# Run tests
 ./vendor/bin/pest --browser
 
-# Screenshots se guardan en:
+# Screenshots are saved in:
 # tests/Browser/Screenshots/
 ```
 
 ### Debugging
 
 ```bash
-# Modo headed (navegador visible)
+# Headed mode (visible browser)
 ./vendor/bin/pest --browser --headed
 
-# Modo debug (pausa en errores, abre navegador)
+# Debug mode (pause on errors, open browser)
 ./vendor/bin/pest --debug
 ```
 
-Para pausar durante un test:
+To pause during a test:
 
 ```php
 it('debugs a page', function () {
     $config = browser();
     
     $page = visit($config['base_url'] . '/wp-admin/')
-        ->debug(); // Pausa ejecución para inspeccionar
+        ->debug(); // Pause execution for inspection
 });
 ```
 
@@ -250,94 +334,181 @@ it('debugs a page', function () {
 ./vendor/bin/pest --browser -v
 ```
 
-## 🔍 Selectores y Esperas
+## Selectors and Waits
 
-### Mejores Prácticas para Selectores
+### Best Practices for Selectors
 
 ```php
 $page = visit('/wp-admin/');
 
-// ✅ Bueno: Usar texto visible
+// ✅ Good: Use visible text
 $page->press('Publish');
 
-// ✅ Bueno: Usar atributos ARIA
+// ✅ Good: Use ARIA attributes
 $page->type('[aria-label="Add title"]', 'My Post');
 
-// ✅ Bueno: Usar data-testid (con atajo @)
-$page->click('@save-button'); // Equivale a [data-testid="save-button"]
+// ✅ Good: Use data-testid (with @ shortcut)
+$page->click('@save-button'); // Equals [data-testid="save-button"]
 
-// ⚠️ Evitar: Selectores frágiles
+// ⚠️ Avoid: Fragile selectors
 $page->click('.wp-block-post-title');
 ```
 
-### Esperas
+### Waits
 
 ```php
 $page = visit('/wp-admin/post-new.php')
-    ->wait(2)                              // Esperar 2 segundos
-    ->assertPresent('.editor-post-title')  // Verificar que existe
-    ->assertSee('Add title');              // Verificar texto visible
+    ->wait(2)                              // Wait 2 seconds
+    ->assertPresent('.editor-post-title')  // Verify element exists
+    ->assertSee('Add title');              // Verify visible text
 ```
 
-## 🐛 Troubleshooting
+## WordPress Server Options
+
+### Option 1: pest-wp-serve (Recommended)
+
+Uses PHP's built-in server with the .pest/wordpress installation:
+
+```bash
+# Start server
+vendor/bin/pest-wp-serve
+
+# With custom port
+vendor/bin/pest-wp-serve --port=8888
+
+# Find available port automatically
+vendor/bin/pest-wp-serve --find-port
+```
+
+### Option 2: wp-env
+
+[wp-env](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-env/) is the official WordPress local environment tool.
+
+```bash
+# Install wp-env globally
+npm install -g @wordpress/env
+
+# Start WordPress (default: http://localhost:8888)
+wp-env start
+
+# Configure PestWP
+vendor/bin/pest-setup-browser --url http://localhost:8888 --user admin --pass password
+```
+
+### Option 3: Docker Compose
+
+Create a `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+services:
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - ./wp-content/plugins/my-plugin:/var/www/html/wp-content/plugins/my-plugin
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+      MYSQL_ROOT_PASSWORD: root
+```
+
+```bash
+# Start containers
+docker-compose up -d
+
+# Configure PestWP
+vendor/bin/pest-setup-browser --url http://localhost:8080 --user admin --pass password
+```
+
+### Option 4: Local Environments (MAMP, XAMPP, etc.)
+
+```bash
+# Configure with your local URL
+vendor/bin/pest-setup-browser --url http://mysite.local --user admin --pass yourpassword
+```
+
+## Troubleshooting
 
 ### Error: "Browser plugin not found"
 
-Asegúrate de haber instalado las dependencias:
+Make sure you have installed dependencies:
 
 ```bash
 composer install
 ./vendor/bin/pest --browser-install
 ```
 
-### Tests fallan con "Cannot connect to browser"
+### Tests fail with "Cannot connect to browser"
 
-Verifica que los navegadores estén instalados:
+Verify browsers are installed:
 
 ```bash
 ./vendor/bin/pest --browser-install
 ```
 
-### WordPress no responde
+### WordPress not responding
 
-Verifica que:
-- WordPress está corriendo en la URL configurada
-- La función `browser()` tiene la URL correcta
-- No hay firewalls bloqueando el acceso
+Verify that:
+- WordPress is running at the configured URL
+- The `browser()` function has the correct URL
+- No firewalls are blocking access
 
-### Debugging de Configuración
+### Debug Configuration
 
 ```php
-// En tu test
+// In your test
 it('shows browser config', function () {
     $config = browser();
-    dump($config); // Ver configuración actual
+    dump($config); // View current configuration
 });
 ```
 
-## 📚 Recursos
+## Environment Variables for CI/CD
+
+```bash
+# Enable browser tests
+PEST_BROWSER_TESTS=true
+
+# Skip browser tests
+PEST_SKIP_BROWSER=true
+
+# WordPress configuration
+WP_BASE_URL=http://localhost:8080
+WP_ADMIN_USER=admin
+WP_ADMIN_PASSWORD=password
+```
+
+## Resources
 
 - [Pest Browser Testing Documentation](https://pestphp.com/docs/browser-testing)
 - [WordPress Testing Handbook](https://make.wordpress.org/core/handbook/testing/)
-- [Pest Plugin Documentation](../README.md)
+- [PestWP Documentation](../README.md)
 
-## 🎯 Diferencias con Playwright Puro
+## Differences from Pure Playwright
 
-Este plugin usa **Pest Browser Testing** que:
+This plugin uses **Pest Browser Testing** which:
 
-✅ **Ventajas**:
-- Sintaxis PHP nativa (no necesitas TypeScript)
-- Integración directa con Pest
-- Misma API que Laravel Dusk (familiaridad)
-- Screenshots automáticos en failures
-- Configuración simplificada
+**Advantages:**
+- Native PHP syntax (no TypeScript needed)
+- Direct Pest integration
+- Same API as Laravel Dusk (familiar)
+- Automatic screenshots on failures
+- Simplified configuration
 
-⚠️ **Consideraciones**:
-- Basado en Playwright por debajo
-- Menos opciones avanzadas que Playwright puro
-- Documentación en desarrollo (Pest Browser es nuevo)
-
-## 🎯 Próximos Pasos
-
-1. **Fase 3.3**: WP Admin Locators - Helpers específicos de WordPress
-2. **Fase 4**: Tooling & Release - Architecture presets y CI/CD templates
+**Considerations:**
+- Based on Playwright under the hood
+- Fewer advanced options than pure Playwright
+- Documentation evolving (Pest Browser is new)

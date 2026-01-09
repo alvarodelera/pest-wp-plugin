@@ -51,7 +51,8 @@
     }
   },
   "bin": [
-    "bin/pest-setup-browser"
+    "bin/pest-setup-browser",
+    "bin/pest-wp-serve"
   ],
   "minimum-stability": "stable",
   "prefer-stable": true,

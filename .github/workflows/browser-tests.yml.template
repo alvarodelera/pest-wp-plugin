@@ -1,0 +1,156 @@
+# PestWP Browser Tests Workflow
+#
+# This workflow runs browser (E2E) tests using Pest Browser Plugin.
+# Browser tests require a running WordPress instance, which is provided
+# via Docker services.
+#
+# Trigger options:
+# - Manually via workflow_dispatch
+# - On push/PR with [browser] in commit message
+# - On schedule (weekly)
+#
+# Usage:
+#   Copy this file to .github/workflows/browser-tests.yml
+
+name: Browser Tests
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      headed:
+        description: 'Run in headed mode (visible browser)'
+        required: false
+        default: 'false'
+        type: boolean
+
+  # Run on push/PR if commit message contains [browser]
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+  # Weekly schedule
+  schedule:
+    - cron: '0 0 * * 0'  # Sunday at midnight
+
+jobs:
+  browser-tests:
+    name: Browser Tests
+    runs-on: ubuntu-latest
+
+    # Only run if:
+    # - Manually triggered
+    # - Commit message contains [browser]
+    # - Scheduled run
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' ||
+      contains(github.event.head_commit.message, '[browser]')
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: wordpress
+          MYSQL_USER: wordpress
+          MYSQL_PASSWORD: wordpress
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, dom, gd, zip, curl
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist
+
+      - name: Cache WordPress
+        uses: actions/cache@v4
+        with:
+          path: .pest/wordpress
+          key: wordpress-latest-${{ hashFiles('src/Installer/*.php') }}
+          restore-keys: wordpress-latest-
+
+      - name: Setup WordPress
+        run: |
+          # Download and setup WordPress
+          vendor/bin/pest --version
+
+      - name: Start WordPress with PHP built-in server
+        run: |
+          # Create router and start server in background
+          vendor/bin/pest-wp-serve --port=8080 &
+          
+          # Wait for server to be ready
+          echo "Waiting for WordPress server..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8080 > /dev/null 2>&1; then
+              echo "WordPress is ready!"
+              break
+            fi
+            echo "Attempt $i/30..."
+            sleep 2
+          done
+
+      - name: Configure browser testing
+        run: |
+          vendor/bin/pest-setup-browser \
+            --url=http://localhost:8080 \
+            --user=admin \
+            --pass=password
+
+      - name: Install Playwright browsers
+        run: ./vendor/bin/pest --browser-install
+
+      - name: Run browser tests
+        env:
+          PEST_BROWSER_TESTS: 'true'
+          WP_BASE_URL: 'http://localhost:8080'
+          WP_ADMIN_USER: 'admin'
+          WP_ADMIN_PASSWORD: 'password'
+        run: |
+          if [ "${{ github.event.inputs.headed }}" = "true" ]; then
+            ./vendor/bin/pest --browser --headed tests/Browser/
+          else
+            ./vendor/bin/pest --browser tests/Browser/
+          fi
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-screenshots
+          path: tests/Browser/Screenshots/
+          retention-days: 7
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-results
+          path: |
+            tests/Browser/Screenshots/
+            .pest/state/
+          retention-days: 7
