@@ -107,31 +107,4 @@ final class TransactionManager
         self::$transactionActive = false;
     }
 
-    // ================================================================
-    // Legacy API aliases (for backward compatibility)
-    // ================================================================
-
-    /**
-     * @deprecated Use beginTransaction() instead
-     */
-    public static function createSavepoint(): void
-    {
-        self::beginTransaction();
-    }
-
-    /**
-     * @deprecated Use rollback() instead
-     */
-    public static function rollbackToSavepoint(): void
-    {
-        self::rollback();
-    }
-
-    /**
-     * Commit - no-op with SAVEPOINT approach.
-     */
-    public static function commit(): void
-    {
-        // No-op: we always rollback for test isolation
-    }
 }

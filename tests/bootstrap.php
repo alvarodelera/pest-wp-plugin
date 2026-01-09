@@ -105,4 +105,4 @@ if (empty($tables)) {
 
 // Note: Database isolation is handled per-test via SAVEPOINT/ROLLBACK
 // See tests/Pest.php for the beforeEach/afterEach hooks that call
-// TransactionManager::createSavepoint() and ::rollbackToSavepoint()
+// TransactionManager::beginTransaction() and ::rollback()
