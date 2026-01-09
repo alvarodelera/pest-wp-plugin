@@ -219,12 +219,14 @@ class AuthStateManager
         $localStorageItems = [];
 
         foreach ($localStorage as $key => $value) {
+            $encodedValue = is_string($value) ? $value : json_encode($value);
             $localStorageItems[] = [
                 'name' => (string) $key,
-                'value' => is_string($value) ? $value : json_encode($value),
+                'value' => $encodedValue !== false ? $encodedValue : '',
             ];
         }
 
+        /** @var array<int, array{origin: string, localStorage: array<int, array{name: string, value: string}>}> $origins */
         $origins = [];
 
         if ($origin !== '' && ! empty($localStorageItems)) {
@@ -260,8 +262,8 @@ class AuthStateManager
                 $data = json_decode($content, true);
 
                 if (is_array($data)) {
-                    $createdAt = $data['created_at'] ?? null;
-                    $expiresAt = $data['expires_at'] ?? null;
+                    $createdAt = isset($data['created_at']) && is_int($data['created_at']) ? $data['created_at'] : null;
+                    $expiresAt = isset($data['expires_at']) && is_int($data['expires_at']) ? $data['expires_at'] : null;
                     $isExpired = $expiresAt !== null && $expiresAt < time();
                 }
             }

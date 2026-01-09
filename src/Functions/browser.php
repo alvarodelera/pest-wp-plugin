@@ -14,10 +14,11 @@ use PestWP\Browser\AuthStateManager;
 function getBrowserConfig(): array
 {
     // The browser() function is defined by users in tests/Pest.php
-    // @phpstan-ignore function.notFound
-    if (function_exists('browser') && is_callable('browser')) {
+    if (function_exists('browser')) {
+        /** @var callable $browserFunc */ // @phpstan-ignore varTag.nativeType
+        $browserFunc = 'browser';
         /** @var array{base_url: string, admin_user: string, admin_password: string} $config */
-        $config = call_user_func('browser');
+        $config = $browserFunc();
 
         return $config;
     }

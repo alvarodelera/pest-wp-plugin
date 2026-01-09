@@ -5,7 +5,9 @@ parameters:
     level: 9
     paths:
         - src
-    tmpDir: %rootDir%/../../phpstan.cache
+    tmpDir: phpstan.cache
+    parallel:
+        maximumNumberOfProcesses: 1
 
     # WordPress stubs for type analysis
     bootstrapFiles:
