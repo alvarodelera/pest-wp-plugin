@@ -15,6 +15,7 @@ require_once __DIR__ . '/Functions/factories.php';
 require_once __DIR__ . '/Functions/auth.php';
 require_once __DIR__ . '/Functions/browser.php';
 require_once __DIR__ . '/Functions/locators.php';
+require_once __DIR__ . '/Functions/arch.php';
 
 // Load expectation categories
 require_once __DIR__ . '/Expectations/posts.php';
@@ -30,3 +31,9 @@ require_once __DIR__ . '/Expectations/post-types.php';
 // Load and register custom expectations
 require_once __DIR__ . '/Expectations.php';
 \PestWP\registerExpectations();
+
+// Load and register architecture expectations
+require_once __DIR__ . '/Arch/WordPressArchPreset.php';
+require_once __DIR__ . '/Arch/WordPressArchHelper.php';
+require_once __DIR__ . '/Arch/Expectations.php';
+\PestWP\Arch\Expectations::register();

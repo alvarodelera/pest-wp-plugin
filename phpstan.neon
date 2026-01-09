@@ -38,6 +38,30 @@ parameters:
         - message: '#Part \$\w+ \(mixed\) of encapsed string cannot be cast to string\.#'
           path: src/Expectations/*.php
 
+        # Architecture testing uses Pest internals (required for arch() integration)
+        - message: '#Undefined variable: \$this#'
+          path: src/Arch/Expectations.php
+        - message: '#Variable \$this in PHPDoc tag @var does not exist\.#'
+          path: src/Arch/Expectations.php
+        - message: '#Call to static method .+ of internal class Pest\\Arch\\.+ from outside its root namespace Pest\.#'
+          path: src/Arch/Expectations.php
+        - message: '#Return type of anonymous function has typehint with internal class Pest\\Arch\\SingleArchExpectation\.#'
+          path: src/Arch/Expectations.php
+
+        # WordPressArchHelper uses dynamically extended expect() methods
+        - message: '#Return type of method .+ has typehint with internal class Pest\\Arch\\SingleArchExpectation\.#'
+          path: src/Arch/WordPressArchHelper.php
+        - message: '#Call to an undefined method Pest\\Expectations\\OppositeExpectation::.+\.#'
+          path: src/Arch/WordPressArchHelper.php
+        - message: '#Call to an undefined method Pest\\Expectation<.+>::.+\.#'
+          path: src/Arch/WordPressArchHelper.php
+        - message: '#should return Pest\\Arch\\SingleArchExpectation but returns Pest\\Arch\\Contracts\\ArchExpectation\.#'
+          path: src/Arch/WordPressArchHelper.php
+
+        # Arch Expectations class is internal (matches @internal annotation)
+        - message: '#Call to static method register\(\) of internal class PestWP\\Arch\\Expectations from outside its root namespace PestWP\.#'
+          path: src/functions.php
+
     # Strictness
     reportUnmatchedIgnoredErrors: true
     treatPhpDocTypesAsCertain: false
