@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PestWP - Modern WordPress Testing with Pest PHP. Elegant syntax, powerful assertions, and seamless WordPress integration.">
+    <meta name="keywords" content="WordPress, Pest PHP, Testing, Unit Tests, Integration Tests, PHP Testing">
+    <title>PestWP - Modern WordPress Testing</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-light">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-dark" disabled>
+    
+    <!-- Marked.js for markdown parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    
+    <style>
+        /* ========================================
+           CSS Variables - GitHub-inspired palette
+           ======================================== */
+        :root {
+            /* Light theme */
+            --color-bg-primary: #ffffff;
+            --color-bg-secondary: #f6f8fa;
+            --color-bg-tertiary: #f0f3f6;
+            --color-bg-overlay: rgba(255, 255, 255, 0.97);
+            --color-border: #d1d9e0;
+            --color-border-muted: #d8dee4;
+            --color-text-primary: #1f2328;
+            --color-text-secondary: #656d76;
+            --color-text-muted: #8b949e;
+            --color-text-link: #0969da;
+            --color-accent: #0969da;
+            --color-accent-hover: #0550ae;
+            --color-accent-subtle: #ddf4ff;
+            --color-success: #1a7f37;
+            --color-success-subtle: #dafbe1;
+            --color-warning: #9a6700;
+            --color-warning-subtle: #fff8c5;
+            --color-danger: #d1242f;
+            --color-code-bg: #f6f8fa;
+            --color-code-text: #1f2328;
+            --color-sidebar-bg: #f6f8fa;
+            --color-sidebar-hover: #eaeef2;
+            --color-sidebar-active: #ddf4ff;
+            --color-header-bg: #f6f8fa;
+            --shadow-sm: 0 1px 0 rgba(31, 35, 40, 0.04);
+            --shadow-md: 0 3px 6px rgba(140, 149, 159, 0.15);
+            --shadow-lg: 0 8px 24px rgba(140, 149, 159, 0.2);
+        }
+
+        [data-theme="dark"] {
+            /* Dark theme */
+            --color-bg-primary: #0d1117;
+            --color-bg-secondary: #161b22;
+            --color-bg-tertiary: #21262d;
+            --color-bg-overlay: rgba(13, 17, 23, 0.97);
+            --color-border: #30363d;
+            --color-border-muted: #21262d;
+            --color-text-primary: #e6edf3;
+            --color-text-secondary: #8b949e;
+            --color-text-muted: #6e7681;
+            --color-text-link: #58a6ff;
+            --color-accent: #58a6ff;
+            --color-accent-hover: #79c0ff;
+            --color-accent-subtle: #388bfd26;
+            --color-success: #3fb950;
+            --color-success-subtle: #23863626;
+            --color-warning: #d29922;
+            --color-warning-subtle: #bb800926;
+            --color-danger: #f85149;
+            --color-code-bg: #161b22;
+            --color-code-text: #e6edf3;
+            --color-sidebar-bg: #010409;
+            --color-sidebar-hover: #161b22;
+            --color-sidebar-active: #388bfd26;
+            --color-header-bg: #161b22;
+            --shadow-sm: 0 1px 0 rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 3px 6px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        /* ========================================
+           Reset & Base Styles
+           ======================================== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ========================================
+           Layout
+           ======================================== */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ========================================
+           Header
+           ======================================== */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--color-header-bg);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--color-text-primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .logo-icon {
+            font-size: 1.75rem;
+        }
+
+        .logo-text span {
+            color: var(--color-accent);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            width: 280px;
+            padding: 8px 12px 8px 36px;
+            background: var(--color-bg-primary);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text-primary);
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px var(--color-accent-subtle);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-muted);
+            pointer-events: none;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--color-bg-secondary);
+            color: var(--color-text-primary);
+        }
+
+        .github-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--color-bg-tertiary);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text-primary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .github-link:hover {
+            background: var(--color-bg-secondary);
+            border-color: var(--color-text-muted);
+        }
+
+        /* ========================================
+           Sidebar
+           ======================================== */
+        .sidebar {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            bottom: 0;
+            width: 280px;
+            background: var(--color-sidebar-bg);
+            border-right: 1px solid var(--color-border);
+            overflow-y: auto;
+            padding: 24px 0;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-text-muted);
+            padding: 0 24px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 8px 24px;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.15s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-link:hover {
+            background: var(--color-sidebar-hover);
+            color: var(--color-text-primary);
+        }
+
+        .sidebar-link.active {
+            background: var(--color-sidebar-active);
+            color: var(--color-accent);
+            border-left-color: var(--color-accent);
+            font-weight: 500;
+        }
+
+        /* Mobile menu toggle */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--color-text-primary);
+        }
+
+        /* ========================================
+           Main Content
+           ======================================== */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+
+        .content-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 48px 48px 96px;
+        }
+
+        /* ========================================
+           Article Styles
+           ======================================== */
+        .article {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .article h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--color-border);
+            line-height: 1.25;
+        }
+
+        .article h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 48px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .article h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 32px;
+            margin-bottom: 12px;
+        }
+
+        .article h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 24px;
+            margin-bottom: 8px;
+        }
+
+        .article p {
+            margin-bottom: 16px;
+            color: var(--color-text-primary);
+        }
+
+        .article a {
+            color: var(--color-text-link);
+            text-decoration: none;
+        }
+
+        .article a:hover {
+            text-decoration: underline;
+        }
+
+        .article ul, .article ol {
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+
+        .article li {
+            margin-bottom: 8px;
+        }
+
+        .article li::marker {
+            color: var(--color-text-muted);
+        }
+
+        .article hr {
+            border: none;
+            border-top: 1px solid var(--color-border);
+            margin: 32px 0;
+        }
+
+        .article blockquote {
+            border-left: 4px solid var(--color-accent);
+            padding: 12px 20px;
+            margin: 16px 0;
+            background: var(--color-bg-secondary);
+            border-radius: 0 6px 6px 0;
+            color: var(--color-text-secondary);
+        }
+
+        .article blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code blocks */
+        .article pre {
+            background: var(--color-code-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            margin: 16px 0 24px;
+            position: relative;
+        }
+
+        .article pre code {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            background: none;
+            padding: 0;
+            color: var(--color-code-text);
+        }
+
+        .article code {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.875em;
+            background: var(--color-code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--color-danger);
+        }
+
+        /* Copy button for code blocks */
+        .code-block-wrapper {
+            position: relative;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 6px 10px;
+            background: var(--color-bg-tertiary);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            color: var(--color-text-secondary);
+            font-size: 0.75rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s;
+        }
+
+        .code-block-wrapper:hover .copy-button {
+            opacity: 1;
+        }
+
+        .copy-button:hover {
+            background: var(--color-bg-secondary);
+            color: var(--color-text-primary);
+        }
+
+        .copy-button.copied {
+            background: var(--color-success-subtle);
+            color: var(--color-success);
+            border-color: var(--color-success);
+        }
+
+        /* Tables */
+        .article table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 24px;
+            font-size: 0.875rem;
+        }
+
+        .article th, .article td {
+            padding: 12px 16px;
+            text-align: left;
+            border: 1px solid var(--color-border);
+        }
+
+        .article th {
+            background: var(--color-bg-secondary);
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .article tr:hover {
+            background: var(--color-bg-secondary);
+        }
+
+        /* Alerts/Notes */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 16px 0;
+            display: flex;
+            gap: 12px;
+        }
+
+        .alert-info {
+            background: var(--color-accent-subtle);
+            border: 1px solid var(--color-accent);
+        }
+
+        .alert-warning {
+            background: var(--color-warning-subtle);
+            border: 1px solid var(--color-warning);
+        }
+
+        .alert-success {
+            background: var(--color-success-subtle);
+            border: 1px solid var(--color-success);
+        }
+
+        /* ========================================
+           Hero Section (Home page)
+           ======================================== */
+        .hero {
+            text-align: center;
+            padding: 64px 0;
+            margin-bottom: 48px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: var(--color-accent-subtle);
+            color: var(--color-accent);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 24px;
+            border: none;
+            padding: 0;
+            background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-description {
+            font-size: 1.25rem;
+            color: var(--color-text-secondary);
+            max-width: 600px;
+            margin: 0 auto 32px;
+            line-height: 1.7;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--color-accent);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-accent-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--color-bg-secondary);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-bg-tertiary);
+            border-color: var(--color-text-muted);
+        }
+
+        /* Feature cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin: 48px 0;
+        }
+
+        .feature-card {
+            padding: 24px;
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--color-accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 16px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            margin-top: 0;
+        }
+
+        .feature-card p {
+            color: var(--color-text-secondary);
+            font-size: 0.9375rem;
+            margin: 0;
+        }
+
+        /* ========================================
+           Footer
+           ======================================== */
+        .footer {
+            background: var(--color-bg-secondary);
+            border-top: 1px solid var(--color-border);
+            padding: 32px 48px;
+            text-align: center;
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+        }
+
+        .footer a {
+            color: var(--color-text-link);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ========================================
+           Loading State
+           ======================================== */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--color-border);
+            border-top-color: var(--color-accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ========================================
+           Search Results
+           ======================================== */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--color-bg-primary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .search-results.active {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--color-border);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover {
+            background: var(--color-bg-secondary);
+        }
+
+        .search-result-title {
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 4px;
+        }
+
+        .search-result-excerpt {
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+        }
+
+        /* ========================================
+           Responsive Design
+           ======================================== */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+
+            .search-input {
+                width: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 16px;
+            }
+
+            .content-wrapper {
+                padding: 32px 20px 64px;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-description {
+                font-size: 1.125rem;
+            }
+
+            .github-link span {
+                display: none;
+            }
+
+            .search-container {
+                display: none;
+            }
+
+            .article h1 {
+                font-size: 2rem;
+            }
+
+            .article h2 {
+                font-size: 1.375rem;
+            }
+
+            .article pre {
+                border-radius: 0;
+                margin-left: -20px;
+                margin-right: -20px;
+                padding: 16px 20px;
+            }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-text-muted);
+        }
+
+        /* Table of Contents */
+        .toc {
+            position: fixed;
+            right: 24px;
+            top: 100px;
+            width: 220px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+            padding: 16px;
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 0.8125rem;
+        }
+
+        .toc-title {
+            font-weight: 600;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            font-size: 0.6875rem;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-link {
+            display: block;
+            padding: 4px 0;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .toc-link:hover {
+            color: var(--color-accent);
+        }
+
+        .toc-link.active {
+            color: var(--color-accent);
+            font-weight: 500;
+        }
+
+        @media (max-width: 1280px) {
+            .toc {
+                display: none;
+            }
+        }
+
+        /* Version badge */
+        .version-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: var(--color-success-subtle);
+            color: var(--color-success);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12h18M3 6h18M3 18h18"/>
+                    </svg>
+                </button>
+                <a href="#home" class="logo">
+                    <span class="logo-icon">🧪</span>
+                    <span class="logo-text">Pest<span>WP</span></span>
+                    <span class="version-badge">v1.0</span>
+                </a>
+            </div>
+
+            <div class="header-actions">
+                <div class="search-container">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search docs...">
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sun-icon">
+                        <circle cx="12" cy="12" r="5"/>
+                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    </svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="moon-icon" style="display: none;">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+
+                <a href="https://github.com/developer-jevin/pest-plugin-wordpress" class="github-link" target="_blank" rel="noopener">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    <span>GitHub</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Getting Started</div>
+                <ul class="sidebar-nav">
+                    <li><a href="#home" class="sidebar-link active" data-page="home">Home</a></li>
+                    <li><a href="#installation" class="sidebar-link" data-page="installation">Installation</a></li>
+                    <li><a href="#getting-started" class="sidebar-link" data-page="getting-started">Quick Start</a></li>
+                    <li><a href="#configuration" class="sidebar-link" data-page="configuration">Configuration</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Core Features</div>
+                <ul class="sidebar-nav">
+                    <li><a href="#factories" class="sidebar-link" data-page="factories">Factories</a></li>
+                    <li><a href="#expectations" class="sidebar-link" data-page="expectations">Expectations</a></li>
+                    <li><a href="#authentication" class="sidebar-link" data-page="authentication">Authentication</a></li>
+                    <li><a href="#database-isolation" class="sidebar-link" data-page="database-isolation">Database Isolation</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Testing Types</div>
+                <ul class="sidebar-nav">
+                    <li><a href="#browser-testing" class="sidebar-link" data-page="browser-testing">Browser Testing</a></li>
+                    <li><a href="#rest-api-testing" class="sidebar-link" data-page="rest-api-testing">REST API Testing</a></li>
+                    <li><a href="#ajax-testing" class="sidebar-link" data-page="ajax-testing">AJAX Testing</a></li>
+                    <li><a href="#architecture-testing" class="sidebar-link" data-page="architecture-testing">Architecture Testing</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Advanced Features</div>
+                <ul class="sidebar-nav">
+                    <li><a href="#mocking" class="sidebar-link" data-page="mocking">Mocking</a></li>
+                    <li><a href="#fixtures" class="sidebar-link" data-page="fixtures">Fixtures</a></li>
+                    <li><a href="#snapshots" class="sidebar-link" data-page="snapshots">Snapshots</a></li>
+                    <li><a href="#visual-regression" class="sidebar-link" data-page="visual-regression">Visual Regression</a></li>
+                    <li><a href="#accessibility-testing" class="sidebar-link" data-page="accessibility-testing">Accessibility Testing</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Integrations</div>
+                <ul class="sidebar-nav">
+                    <li><a href="#woocommerce" class="sidebar-link" data-page="woocommerce">WooCommerce</a></li>
+                    <li><a href="#gutenberg" class="sidebar-link" data-page="gutenberg">Gutenberg</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Deployment</div>
+                <ul class="sidebar-nav">
+                    <li><a href="#ci-cd" class="sidebar-link" data-page="ci-cd">CI/CD</a></li>
+                    <li><a href="#migration" class="sidebar-link" data-page="migration">Migration</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <article class="article" id="articleContent">
+                    <!-- Content loaded here -->
+                </article>
+            </div>
+
+            <footer class="footer">
+                <p>
+                    Released under the MIT License. 
+                    <a href="https://github.com/developer-jevin/pest-plugin-wordpress" target="_blank">View on GitHub</a>
+                </p>
+                <p style="margin-top: 8px;">
+                    Built with Pest PHP for WordPress developers.
+                </p>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // ========================================
+        // Configuration
+        // ========================================
+        const config = {
+            basePath: 'guide/', // Path to markdown files
+            defaultPage: 'home',
+            pages: {
+                'home': 'README.md',
+                'installation': 'installation.md',
+                'getting-started': 'getting-started.md',
+                'configuration': 'configuration.md',
+                'factories': 'factories.md',
+                'expectations': 'expectations.md',
+                'authentication': 'authentication.md',
+                'database-isolation': 'database-isolation.md',
+                'browser-testing': 'browser-testing.md',
+                'rest-api-testing': 'rest-api-testing.md',
+                'ajax-testing': 'ajax-testing.md',
+                'architecture-testing': 'architecture-testing.md',
+                'mocking': 'mocking.md',
+                'fixtures': 'fixtures.md',
+                'snapshots': 'snapshots.md',
+                'visual-regression': 'visual-regression.md',
+                'accessibility-testing': 'accessibility-testing.md',
+                'woocommerce': 'woocommerce.md',
+                'gutenberg': 'gutenberg.md',
+                'ci-cd': 'ci-cd.md',
+                'migration': 'migration.md'
+            }
+        };
+
+        // ========================================
+        // DOM Elements
+        // ========================================
+        const elements = {
+            articleContent: document.getElementById('articleContent'),
+            searchInput: document.getElementById('searchInput'),
+            searchResults: document.getElementById('searchResults'),
+            themeToggle: document.getElementById('themeToggle'),
+            menuToggle: document.getElementById('menuToggle'),
+            sidebar: document.getElementById('sidebar'),
+            sunIcon: document.querySelector('.sun-icon'),
+            moonIcon: document.querySelector('.moon-icon'),
+            hljsLight: document.getElementById('hljs-light'),
+            hljsDark: document.getElementById('hljs-dark')
+        };
+
+        // ========================================
+        // Theme Management
+        // ========================================
+        const theme = {
+            init() {
+                const saved = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const initial = saved || (prefersDark ? 'dark' : 'light');
+                this.set(initial);
+            },
+
+            toggle() {
+                const current = document.documentElement.getAttribute('data-theme');
+                this.set(current === 'dark' ? 'light' : 'dark');
+            },
+
+            set(mode) {
+                document.documentElement.setAttribute('data-theme', mode);
+                localStorage.setItem('theme', mode);
+                
+                // Toggle icons
+                elements.sunIcon.style.display = mode === 'dark' ? 'block' : 'none';
+                elements.moonIcon.style.display = mode === 'dark' ? 'none' : 'block';
+                
+                // Toggle highlight.js themes
+                elements.hljsLight.disabled = mode === 'dark';
+                elements.hljsDark.disabled = mode === 'light';
+            }
+        };
+
+        // ========================================
+        // Markdown Renderer
+        // ========================================
+        const markdown = {
+            init() {
+                marked.setOptions({
+                    highlight: (code, lang) => {
+                        if (lang && hljs.getLanguage(lang)) {
+                            return hljs.highlight(code, { language: lang }).value;
+                        }
+                        return hljs.highlightAuto(code).value;
+                    },
+                    gfm: true,
+                    breaks: false,
+                    headerIds: true
+                });
+            },
+
+            render(content) {
+                return marked.parse(content);
+            }
+        };
+
+        // ========================================
+        // Content Loader
+        // ========================================
+        const content = {
+            cache: {},
+
+            async load(page) {
+                const file = config.pages[page];
+                if (!file) {
+                    this.showError('Page not found');
+                    return;
+                }
+
+                // Check cache
+                if (this.cache[page]) {
+                    this.display(this.cache[page], page);
+                    return;
+                }
+
+                // Show loading
+                elements.articleContent.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                `;
+
+                try {
+                    const response = await fetch(config.basePath + file);
+                    if (!response.ok) throw new Error('Failed to load');
+                    
+                    const text = await response.text();
+                    this.cache[page] = text;
+                    this.display(text, page);
+                } catch (error) {
+                    // If fetch fails, show home page content directly
+                    if (page === 'home') {
+                        this.showHomePage();
+                    } else {
+                        this.showError('Unable to load content. Please try again.');
+                    }
+                }
+            },
+
+            display(text, page) {
+                if (page === 'home') {
+                    this.showHomePage();
+                } else {
+                    const html = markdown.render(text);
+                    elements.articleContent.innerHTML = html;
+                    this.addCopyButtons();
+                    this.updateActiveLink(page);
+                    window.scrollTo(0, 0);
+                }
+            },
+
+            showHomePage() {
+                elements.articleContent.innerHTML = `
+                    <div class="hero">
+                        <span class="hero-badge">Built for WordPress Developers</span>
+                        <h1>Modern WordPress Testing</h1>
+                        <p class="hero-description">
+                            Elegant testing syntax, powerful assertions, and seamless WordPress integration. 
+                            Write tests that are a joy to read and maintain.
+                        </p>
+                        <div class="hero-buttons">
+                            <a href="#getting-started" class="btn btn-primary">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                                Get Started
+                            </a>
+                            <a href="https://github.com/developer-jevin/pest-plugin-wordpress" class="btn btn-secondary" target="_blank">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                                View on GitHub
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🎯</div>
+                            <h3>Elegant Syntax</h3>
+                            <p>Write expressive tests with Pest's beautiful, human-readable syntax. No more verbose PHPUnit boilerplate.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🏭</div>
+                            <h3>Factory Helpers</h3>
+                            <p>Create posts, users, terms, and more with simple factory functions. Test data creation made effortless.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">✅</div>
+                            <h3>Custom Expectations</h3>
+                            <p>25+ WordPress-specific expectations for hooks, filters, database queries, and more.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🔒</div>
+                            <h3>Database Isolation</h3>
+                            <p>Automatic transaction rollback ensures each test runs in complete isolation.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🌐</div>
+                            <h3>Browser Testing</h3>
+                            <p>Full Playwright integration for end-to-end testing with visual regression support.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🛒</div>
+                            <h3>WooCommerce Ready</h3>
+                            <p>90+ selectors for testing WooCommerce shops, carts, checkouts, and admin screens.</p>
+                        </div>
+                    </div>
+
+                    <h2>Quick Example</h2>
+                    <pre><code class="language-php">use function PestWP\\Factories\\createPost;
+use function PestWP\\Factories\\createUser;
+
+it('allows admins to publish posts', function () {
+    // Create test data
+    $admin = createUser(['role' => 'administrator']);
+    $post = createPost(['post_status' => 'draft']);
+    
+    // Login and act
+    loginAs($admin);
+    wp_publish_post($post->ID);
+    
+    // Assert
+    expect(get_post($post->ID))
+        ->post_status->toBe('publish')
+        ->post_author->toBe($admin->ID);
+});
+
+it('registers REST API endpoints', function () {
+    rest()
+        ->get('/wp/v2/posts')
+        ->assertOk()
+        ->assertJsonCount(10, 'body');
+});
+
+it('fires hooks correctly', function () {
+    expect('save_post')
+        ->toBeAction()
+        ->toHaveBeenFired();
+});</code></pre>
+
+                    <h2>Installation</h2>
+                    <pre><code class="language-bash">composer require developer-jevin/pest-plugin-wordpress --dev</code></pre>
+                    <p>
+                        That's it! PestWP integrates seamlessly with your existing WordPress test setup. 
+                        <a href="#installation">Read the full installation guide</a> for more details.
+                    </p>
+
+                    <h2>What's Included</h2>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">📝</div>
+                            <h3>REST API Testing</h3>
+                            <p>Fluent API for testing WordPress REST endpoints with authentication support.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">⚡</div>
+                            <h3>AJAX Testing</h3>
+                            <p>Test WordPress AJAX handlers with proper nonce handling and user context.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🎭</div>
+                            <h3>Mocking System</h3>
+                            <p>Mock functions, hooks, HTTP requests, and time for predictable tests.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📸</div>
+                            <h3>Visual Testing</h3>
+                            <p>Snapshot and screenshot comparison testing for visual regression detection.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">♿</div>
+                            <h3>Accessibility</h3>
+                            <p>Built-in WCAG compliance testing with aXe integration.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🏗️</div>
+                            <h3>Architecture Testing</h3>
+                            <p>Enforce coding standards and architectural rules across your codebase.</p>
+                        </div>
+                    </div>
+                `;
+                
+                // Highlight code blocks
+                elements.articleContent.querySelectorAll('pre code').forEach(block => {
+                    hljs.highlightElement(block);
+                });
+                
+                this.addCopyButtons();
+                this.updateActiveLink('home');
+            },
+
+            showError(message) {
+                elements.articleContent.innerHTML = `
+                    <div style="text-align: center; padding: 64px 0;">
+                        <div style="font-size: 4rem; margin-bottom: 16px;">😕</div>
+                        <h2 style="margin-bottom: 16px;">Oops!</h2>
+                        <p style="color: var(--color-text-secondary);">${message}</p>
+                        <a href="#home" class="btn btn-primary" style="margin-top: 24px;">Go Home</a>
+                    </div>
+                `;
+            },
+
+            addCopyButtons() {
+                elements.articleContent.querySelectorAll('pre').forEach(pre => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'code-block-wrapper';
+                    pre.parentNode.insertBefore(wrapper, pre);
+                    wrapper.appendChild(pre);
+
+                    const button = document.createElement('button');
+                    button.className = 'copy-button';
+                    button.textContent = 'Copy';
+                    button.onclick = () => {
+                        const code = pre.querySelector('code').textContent;
+                        navigator.clipboard.writeText(code).then(() => {
+                            button.textContent = 'Copied!';
+                            button.classList.add('copied');
+                            setTimeout(() => {
+                                button.textContent = 'Copy';
+                                button.classList.remove('copied');
+                            }, 2000);
+                        });
+                    };
+                    wrapper.appendChild(button);
+                });
+            },
+
+            updateActiveLink(page) {
+                document.querySelectorAll('.sidebar-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.dataset.page === page) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        };
+
+        // ========================================
+        // Search Functionality
+        // ========================================
+        const search = {
+            data: [],
+
+            async init() {
+                // Build search index from page titles
+                this.data = Object.keys(config.pages).map(key => ({
+                    id: key,
+                    title: key.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+                    file: config.pages[key]
+                }));
+            },
+
+            query(term) {
+                if (!term) return [];
+                const lower = term.toLowerCase();
+                return this.data.filter(item => 
+                    item.title.toLowerCase().includes(lower)
+                );
+            },
+
+            showResults(results) {
+                if (results.length === 0) {
+                    elements.searchResults.innerHTML = `
+                        <div class="search-result-item">
+                            <div class="search-result-title">No results found</div>
+                        </div>
+                    `;
+                } else {
+                    elements.searchResults.innerHTML = results.map(item => `
+                        <div class="search-result-item" data-page="${item.id}">
+                            <div class="search-result-title">${item.title}</div>
+                            <div class="search-result-excerpt">${item.file}</div>
+                        </div>
+                    `).join('');
+                }
+                elements.searchResults.classList.add('active');
+            },
+
+            hideResults() {
+                elements.searchResults.classList.remove('active');
+            }
+        };
+
+        // ========================================
+        // Router
+        // ========================================
+        const router = {
+            init() {
+                // Handle initial hash
+                this.navigate(location.hash.slice(1) || 'home');
+
+                // Handle hash changes
+                window.addEventListener('hashchange', () => {
+                    this.navigate(location.hash.slice(1) || 'home');
+                });
+            },
+
+            navigate(page) {
+                if (config.pages[page]) {
+                    content.load(page);
+                    // Close mobile menu
+                    elements.sidebar.classList.remove('open');
+                }
+            }
+        };
+
+        // ========================================
+        // Event Listeners
+        // ========================================
+        function initEventListeners() {
+            // Theme toggle
+            elements.themeToggle.addEventListener('click', () => theme.toggle());
+
+            // Mobile menu toggle
+            elements.menuToggle.addEventListener('click', () => {
+                elements.sidebar.classList.toggle('open');
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 1024) {
+                    if (!elements.sidebar.contains(e.target) && 
+                        !elements.menuToggle.contains(e.target)) {
+                        elements.sidebar.classList.remove('open');
+                    }
+                }
+            });
+
+            // Search input
+            elements.searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.trim();
+                if (term.length >= 2) {
+                    const results = search.query(term);
+                    search.showResults(results);
+                } else {
+                    search.hideResults();
+                }
+            });
+
+            elements.searchInput.addEventListener('focus', () => {
+                const term = elements.searchInput.value.trim();
+                if (term.length >= 2) {
+                    const results = search.query(term);
+                    search.showResults(results);
+                }
+            });
+
+            // Search result clicks
+            elements.searchResults.addEventListener('click', (e) => {
+                const item = e.target.closest('.search-result-item');
+                if (item && item.dataset.page) {
+                    location.hash = item.dataset.page;
+                    elements.searchInput.value = '';
+                    search.hideResults();
+                }
+            });
+
+            // Close search on outside click
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-container')) {
+                    search.hideResults();
+                }
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                // Focus search on Cmd/Ctrl + K
+                if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                    e.preventDefault();
+                    elements.searchInput.focus();
+                }
+                // Close search on Escape
+                if (e.key === 'Escape') {
+                    search.hideResults();
+                    elements.searchInput.blur();
+                }
+            });
+        }
+
+        // ========================================
+        // Initialize
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            theme.init();
+            markdown.init();
+            search.init();
+            router.init();
+            initEventListeners();
+        });
+    </script>
+</body>
+</html>
