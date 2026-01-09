@@ -61,6 +61,6 @@ project-task-list.md
 src/**/README.md
 
 # Internal scripts
-generate_js.ps1
+generate_js.py
 phpstan.ps1
 
