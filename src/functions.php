@@ -20,6 +20,11 @@ require_once __DIR__ . '/Functions/rest.php';
 require_once __DIR__ . '/Functions/ajax.php';
 require_once __DIR__ . '/Functions/nonce.php';
 require_once __DIR__ . '/Functions/mock.php';
+require_once __DIR__ . '/Functions/woocommerce.php';
+require_once __DIR__ . '/Functions/gutenberg.php';
+require_once __DIR__ . '/Functions/viewport.php';
+require_once __DIR__ . '/Functions/accessibility.php';
+require_once __DIR__ . '/Functions/screenshot.php';
 
 // Load REST and AJAX classes
 require_once __DIR__ . '/Rest/RestResponse.php';
