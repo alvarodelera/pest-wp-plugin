@@ -6,26 +6,26 @@
     <meta name="description" content="PestWP - Modern WordPress Testing with Pest PHP. Elegant syntax, powerful assertions, and seamless WordPress integration.">
     <meta name="keywords" content="WordPress, Pest PHP, Testing, Unit Tests, Integration Tests, PHP Testing">
     <title>PestWP - Modern WordPress Testing</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
+
     <!-- Highlight.js for syntax highlighting -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-light">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-dark" disabled>
-    
+
     <!-- Marked.js for markdown parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
-    
+
     <style>
         /* ========================================
            CSS Variables - GitHub-inspired palette
@@ -1010,7 +1010,7 @@
 
             <footer class="footer">
                 <p>
-                    Released under the MIT License. 
+                    Released under the MIT License.
                     <a href="https://github.com/alvarodelera/pest-wp-plugin" target="_blank">View on GitHub</a>
                 </p>
                 <p style="margin-top: 8px;">
@@ -1113,11 +1113,11 @@
             set(mode) {
                 document.documentElement.setAttribute('data-theme', mode);
                 localStorage.setItem('theme', mode);
-                
+
                 // Toggle icons
                 elements.sunIcon.style.display = mode === 'dark' ? 'block' : 'none';
                 elements.moonIcon.style.display = mode === 'dark' ? 'none' : 'block';
-                
+
                 // Toggle highlight.js themes
                 elements.hljsLight.disabled = mode === 'dark';
                 elements.hljsDark.disabled = mode === 'light';
@@ -1186,7 +1186,7 @@
                         <span class="hero-badge">Built for WordPress Developers</span>
                         <h1>Modern WordPress Testing</h1>
                         <p class="hero-description">
-                            Elegant testing syntax, powerful assertions, and seamless WordPress integration. 
+                            Elegant testing syntax, powerful assertions, and seamless WordPress integration.
                             Write tests that are a joy to read and maintain.
                         </p>
                         <div class="hero-buttons">
@@ -1246,11 +1246,11 @@ it('allows admins to publish posts', function () {
     // Create test data
     $admin = createUser(['role' => 'administrator']);
     $post = createPost(['post_status' => 'draft']);
-    
+
     // Login and act
     loginAs($admin);
     wp_publish_post($post->ID);
-    
+
     // Assert
     expect(get_post($post->ID))
         ->post_status->toBe('publish')
@@ -1273,7 +1273,7 @@ it('fires hooks correctly', function () {
                     <h2>Installation</h2>
                     <pre><code class="language-bash">composer require alvarodelera/pest-wp-plugin --dev</code></pre>
                     <p>
-                        That's it! PestWP integrates seamlessly with your existing WordPress test setup. 
+                        That's it! PestWP integrates seamlessly with your existing WordPress test setup.
                         <a href="#installation">Read the full installation guide</a> for more details.
                     </p>
 
@@ -1311,12 +1311,12 @@ it('fires hooks correctly', function () {
                         </div>
                     </div>
                 `;
-                
+
                 // Highlight code blocks
                 elements.articleContent.querySelectorAll('pre code').forEach(block => {
                     hljs.highlightElement(block);
                 });
-                
+
                 this.addCopyButtons();
                 this.updateActiveLink('home');
             },
@@ -1385,7 +1385,7 @@ it('fires hooks correctly', function () {
             query(term) {
                 if (!term) return [];
                 const lower = term.toLowerCase();
-                return this.data.filter(item => 
+                return this.data.filter(item =>
                     item.title.toLowerCase().includes(lower)
                 );
             },
@@ -1451,7 +1451,7 @@ it('fires hooks correctly', function () {
             // Close sidebar when clicking outside on mobile
             document.addEventListener('click', (e) => {
                 if (window.innerWidth <= 1024) {
-                    if (!elements.sidebar.contains(e.target) && 
+                    if (!elements.sidebar.contains(e.target) &&
                         !elements.menuToggle.contains(e.target)) {
                         elements.sidebar.classList.remove('open');
                     }
