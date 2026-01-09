@@ -22,7 +22,7 @@ describe('Additional Custom Expectations', function () {
         });
 
         it('fails when user does not have capability', function () {
-            $subscriber = createUser('subscriber');
+            $subscriber = createUser();
 
             expect($subscriber)->toHaveCapability('manage_options');
         })->throws(ExpectationFailedException::class);
@@ -34,7 +34,7 @@ describe('Additional Custom Expectations', function () {
         });
 
         it('fails when user does not have role', function () {
-            $subscriber = createUser('subscriber');
+            $subscriber = createUser();
 
             expect($subscriber)->toHaveRole('administrator');
         })->throws(ExpectationFailedException::class);
@@ -269,7 +269,7 @@ describe('Additional Custom Expectations', function () {
 
             deleteOption('test_helper_option');
 
-            expect(get_option('test_helper_option', false))->toBe(false);
+            expect(get_option('test_helper_option', false))->toBeFalse();
         });
 
         it('can set and get transients', function () {
@@ -279,7 +279,7 @@ describe('Additional Custom Expectations', function () {
 
             deleteTransient('test_helper_transient');
 
-            expect(get_transient('test_helper_transient'))->toBe(false);
+            expect(get_transient('test_helper_transient'))->toBeFalse();
         });
 
         it('can register and use shortcodes', function () {
@@ -339,17 +339,16 @@ describe('Additional Custom Expectations', function () {
             expect($admin)
                 ->toHaveRole('administrator')
                 ->can('manage_options')
-                ->can('delete_users');
-
-            expect($editor)
+                ->can('delete_users')
+                ->and($editor)
                 ->toHaveRole('editor')
                 ->can('edit_posts')
-                ->can('edit_others_posts');
-
-            expect($author)
+                ->can('edit_others_posts')
+                ->and($author)
                 ->toHaveRole('author')
                 ->can('edit_posts')
                 ->can('publish_posts');
+
         });
 
         it('can test shortcode registration and output', function () {

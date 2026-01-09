@@ -5,7 +5,7 @@ parameters:
     level: 9
     paths:
         - src
-    tmpDir: phpstan.cache
+    tmpDir: %rootDir%/../../phpstan.cache
 
     # WordPress stubs for type analysis
     bootstrapFiles:

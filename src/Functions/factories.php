@@ -92,9 +92,9 @@ function createUser(string|array $roleOrArgs = 'subscriber', array $extraArgs = 
         throw new \RuntimeException('Failed to create user: ' . $userId->get_error_message());
     }
 
-    $user = get_user_by('id', $userId);
+    $user = new \WP_User($userId);
 
-    if (! $user instanceof \WP_User) {
+    if (! $user->exists()) {
         throw new \RuntimeException('Failed to retrieve created user');
     }
 

@@ -23,14 +23,14 @@ function getBrowserConfig(): array
     $adminPassword = $_ENV['WP_ADMIN_PASSWORD'] ?? getenv('WP_ADMIN_PASSWORD');
 
     return [
-      'base_url' => is_string($baseUrl) && $baseUrl !== '' ? $baseUrl : 'http://localhost:8080',
-      'admin_user' => is_string($adminUser) && $adminUser !== '' ? $adminUser : 'admin',
-      'admin_password' => is_string($adminPassword) && $adminPassword !== '' ? $adminPassword : 'password',
+        'base_url' => is_string($baseUrl) && $baseUrl !== '' ? $baseUrl : 'http://localhost:8080',
+        'admin_user' => is_string($adminUser) && $adminUser !== '' ? $adminUser : 'admin',
+        'admin_password' => is_string($adminPassword) && $adminPassword !== '' ? $adminPassword : 'password',
     ];
 }
 
 /**
- * Path to stored browser auth state (if used).
+ * Path to the stored browser auth state (if used).
  */
 function getStorageStatePath(): string
 {

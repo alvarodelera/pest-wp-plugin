@@ -15,7 +15,6 @@ declare(strict_types=1);
  */
 
 use function PestWP\Functions\adminUrl;
-use function PestWP\Functions\editorNoticeSelector;
 use function PestWP\Functions\getBrowserConfig;
 use function PestWP\Functions\loginUrl;
 use function PestWP\Functions\newPostUrl;
