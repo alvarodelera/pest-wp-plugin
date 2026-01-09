@@ -13,7 +13,7 @@ namespace PestWP;
  */
 function version(): string
 {
-    return '1.0.0-dev';
+    return '1.0.1';
 }
 
 /**
