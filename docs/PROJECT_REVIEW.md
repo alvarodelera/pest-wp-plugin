@@ -371,7 +371,7 @@ pest-wp-plugin/
 
 | Issue | Location | Severity | Description |
 |-------|----------|----------|-------------|
-| **Deprecated Methods Not Removed** | `src/Database/TransactionManager.php:115-127` | Low | `createSavepoint()` and `rollbackToSavepoint()` are deprecated but still present |
+| ~~**Deprecated Methods Not Removed**~~ | ~~`src/Database/TransactionManager.php:115-127`~~ | ~~Low~~ | ~~`createSavepoint()` and `rollbackToSavepoint()` are deprecated but still present~~ ✅ Fixed in v1.0.0 |
 | **Silent Exception Handling** | `src/Database/DatabaseManager.php:163-165` | Medium | Exception caught and returns false without logging |
 | **Silent ReflectionException** | `src/Database/DatabaseManager.php:192-194` | Low | ReflectionException caught and ignored with comment "// Ignore" |
 | **Windows File Handle Delay** | `src/Database/DatabaseManager.php:142-143` | Low | Hardcoded 10ms `usleep()` workaround for Windows file handles |
@@ -398,7 +398,7 @@ pest-wp-plugin/
 
 | Item | Location | Recommended Action |
 |------|----------|-------------------|
-| Remove deprecated methods | `TransactionManager.php` | Remove in v1.0.0 with migration notice |
+| ~~Remove deprecated methods~~ | ~~`TransactionManager.php`~~ | ~~Remove in v1.0.0 with migration notice~~ ✅ Done in v1.0.0 |
 | Add logging for caught exceptions | `DatabaseManager.php` | Add optional debug logging via `PEST_WP_DEBUG` |
 | Review Windows compatibility | Multiple installers | Add Windows to CI matrix |
 | Browser test CI pipeline | `.github/workflows/` | Add browser test job with Docker WordPress |
