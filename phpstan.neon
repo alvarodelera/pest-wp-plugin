@@ -37,6 +37,8 @@ parameters:
           path: src/Expectations/*.php
         - message: '#Part \$\w+ \(mixed\) of encapsed string cannot be cast to string\.#'
           path: src/Expectations/*.php
+        - message: '#Variable \$this in PHPDoc tag @var does not match assigned variable#'
+          path: src/Expectations/*.php
 
         # Architecture testing uses Pest internals (required for arch() integration)
         - message: '#Undefined variable: \$this#'
@@ -61,6 +63,10 @@ parameters:
         # Arch Expectations class is internal (matches @internal annotation)
         - message: '#Call to static method register\(\) of internal class PestWP\\Arch\\Expectations from outside its root namespace PestWP\.#'
           path: src/functions.php
+
+        # REST Client uses WP_REST_Request which has complex generic type
+        - message: '#Method PestWP\\Rest\\RestClient::buildRequest\(\) should return WP_REST_Request<array<string, mixed>> but returns WP_REST_Request<array>\.#'
+          path: src/Rest/RestClient.php
 
     # Strictness
     reportUnmatchedIgnoredErrors: true

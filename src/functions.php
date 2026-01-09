@@ -16,6 +16,15 @@ require_once __DIR__ . '/Functions/auth.php';
 require_once __DIR__ . '/Functions/browser.php';
 require_once __DIR__ . '/Functions/locators.php';
 require_once __DIR__ . '/Functions/arch.php';
+require_once __DIR__ . '/Functions/rest.php';
+require_once __DIR__ . '/Functions/ajax.php';
+require_once __DIR__ . '/Functions/nonce.php';
+
+// Load REST and AJAX classes
+require_once __DIR__ . '/Rest/RestResponse.php';
+require_once __DIR__ . '/Rest/RestClient.php';
+require_once __DIR__ . '/Ajax/AjaxResponse.php';
+require_once __DIR__ . '/Ajax/AjaxClient.php';
 
 // Load expectation categories
 require_once __DIR__ . '/Expectations/posts.php';
@@ -27,6 +36,7 @@ require_once __DIR__ . '/Expectations/users.php';
 require_once __DIR__ . '/Expectations/shortcodes.php';
 require_once __DIR__ . '/Expectations/options.php';
 require_once __DIR__ . '/Expectations/post-types.php';
+require_once __DIR__ . '/Expectations/rest-ajax.php';
 
 // Load and register custom expectations
 require_once __DIR__ . '/Expectations.php';

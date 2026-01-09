@@ -20,6 +20,7 @@ use function PestWP\Expectations\registerMetadataExpectations;
 use function PestWP\Expectations\registerOptionsExpectations;
 use function PestWP\Expectations\registerPostExpectations;
 use function PestWP\Expectations\registerPostTypeExpectations;
+use function PestWP\Expectations\registerRestAjaxExpectations;
 use function PestWP\Expectations\registerShortcodeExpectations;
 use function PestWP\Expectations\registerTermExpectations;
 use function PestWP\Expectations\registerUserExpectations;
@@ -41,4 +42,5 @@ function registerExpectations(): void
     registerShortcodeExpectations();
     registerOptionsExpectations();
     registerPostTypeExpectations();
+    registerRestAjaxExpectations();
 }
