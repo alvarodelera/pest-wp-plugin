@@ -1,26 +1,23 @@
 {
-    "preset": "psr12",
-    "rules": {
-        "declare_strict_types": true,
-        "ordered_imports": {
-            "sort_algorithm": "alpha",
-            "imports_order": ["const", "class", "function"]
-        },
-        "no_unused_imports": true,
-        "single_quote": true,
-        "trailing_comma_in_multiline": {
-            "elements": ["arrays", "arguments", "parameters"]
-        },
-        "concat_space": {
-            "spacing": "one"
-        },
-        "not_operator_with_successor_space": true,
-        "blank_line_before_statement": {
-            "statements": ["return", "throw", "try"]
-        }
+  "preset": "psr12",
+  "rules": {
+    "declare_strict_types": true,
+    "ordered_imports": {
+      "sort_algorithm": "alpha",
+      "imports_order": ["const", "class", "function"]
     },
-    "exclude": [
-        "vendor",
-        ".pest"
-    ]
+    "no_unused_imports": true,
+    "single_quote": true,
+    "trailing_comma_in_multiline": {
+      "elements": ["arrays", "arguments", "parameters"]
+    },
+    "concat_space": {
+      "spacing": "one"
+    },
+    "not_operator_with_successor_space": true,
+    "blank_line_before_statement": {
+      "statements": ["return", "throw", "try"]
+    }
+  },
+  "exclude": ["vendor", ".pest", "phpstan.cache"]
 }
