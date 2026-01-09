@@ -19,12 +19,21 @@ require_once __DIR__ . '/Functions/arch.php';
 require_once __DIR__ . '/Functions/rest.php';
 require_once __DIR__ . '/Functions/ajax.php';
 require_once __DIR__ . '/Functions/nonce.php';
+require_once __DIR__ . '/Functions/mock.php';
 
 // Load REST and AJAX classes
 require_once __DIR__ . '/Rest/RestResponse.php';
 require_once __DIR__ . '/Rest/RestClient.php';
 require_once __DIR__ . '/Ajax/AjaxResponse.php';
 require_once __DIR__ . '/Ajax/AjaxClient.php';
+
+// Load Mock, Fixture, and Snapshot classes
+require_once __DIR__ . '/Mock/FunctionMock.php';
+require_once __DIR__ . '/Mock/HookMock.php';
+require_once __DIR__ . '/Mock/HTTPMock.php';
+require_once __DIR__ . '/Mock/TimeMock.php';
+require_once __DIR__ . '/Fixtures/FixtureManager.php';
+require_once __DIR__ . '/Snapshot/SnapshotManager.php';
 
 // Load expectation categories
 require_once __DIR__ . '/Expectations/posts.php';
@@ -37,6 +46,7 @@ require_once __DIR__ . '/Expectations/shortcodes.php';
 require_once __DIR__ . '/Expectations/options.php';
 require_once __DIR__ . '/Expectations/post-types.php';
 require_once __DIR__ . '/Expectations/rest-ajax.php';
+require_once __DIR__ . '/Expectations/mocking.php';
 
 // Load and register custom expectations
 require_once __DIR__ . '/Expectations.php';

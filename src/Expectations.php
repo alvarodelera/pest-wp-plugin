@@ -17,6 +17,7 @@ namespace PestWP;
 use function PestWP\Expectations\registerErrorExpectations;
 use function PestWP\Expectations\registerHookExpectations;
 use function PestWP\Expectations\registerMetadataExpectations;
+use function PestWP\Expectations\registerMockingExpectations;
 use function PestWP\Expectations\registerOptionsExpectations;
 use function PestWP\Expectations\registerPostExpectations;
 use function PestWP\Expectations\registerPostTypeExpectations;
@@ -43,4 +44,5 @@ function registerExpectations(): void
     registerOptionsExpectations();
     registerPostTypeExpectations();
     registerRestAjaxExpectations();
+    registerMockingExpectations();
 }
