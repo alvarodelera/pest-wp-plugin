@@ -14,6 +14,8 @@ package-lock.json
 .pest/
 
 # Testing
+phpstan.cache
+.phpstan.cache
 .phpunit.result.cache
 .phpunit.cache/
 coverage/
@@ -61,6 +63,6 @@ project-task-list.md
 src/**/README.md
 
 # Internal scripts
-generate_js.py
-phpstan.ps1
+*.py
+*.ps1
 
