@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PestWP\Functions;
 
+use PestWP\Browser\AuthStateManager;
+
 /**
  * Get the browser configuration from tests/Pest.php or environment.
  *
@@ -11,9 +13,11 @@ namespace PestWP\Functions;
  */
 function getBrowserConfig(): array
 {
-    if (function_exists('browser')) {
+    // The browser() function is defined by users in tests/Pest.php
+    // @phpstan-ignore function.notFound
+    if (function_exists('browser') && is_callable('browser')) {
         /** @var array{base_url: string, admin_user: string, admin_password: string} $config */
-        $config = browser();
+        $config = call_user_func('browser');
 
         return $config;
     }
@@ -30,19 +34,112 @@ function getBrowserConfig(): array
 }
 
 /**
- * Path to the stored browser auth state (if used).
+ * Get the AuthStateManager instance.
  */
-function getStorageStatePath(): string
+function getAuthStateManager(): AuthStateManager
 {
-    $projectRoot = dirname(__DIR__, 2);
+    static $manager = null;
 
-    return $projectRoot . '/.pest/state/admin.json';
+    if ($manager === null) {
+        $manager = new AuthStateManager();
+    }
+
+    return $manager;
 }
 
 /**
- * Check if a stored browser auth state exists.
+ * Path to the stored browser auth state directory.
  */
-function hasBrowserAuthState(): bool
+function getStorageStatePath(): string
 {
-    return file_exists(getStorageStatePath());
+    return getAuthStateManager()->getStatePath();
+}
+
+/**
+ * Path to a specific stored browser auth state file.
+ *
+ * @param string $name The name of the state (default: 'admin')
+ */
+function getStorageStateFilePath(string $name = 'admin'): string
+{
+    return getAuthStateManager()->getStateFilePath($name);
+}
+
+/**
+ * Check if a stored browser auth state exists and is valid (not expired).
+ *
+ * @param string $name The name of the state (default: 'admin')
+ */
+function hasBrowserAuthState(string $name = 'admin'): bool
+{
+    return getAuthStateManager()->hasValidState($name);
+}
+
+/**
+ * Save browser authentication state for later reuse.
+ *
+ * @param array<string, mixed> $state The browser state (cookies, localStorage, etc.)
+ * @param string $name The name of the state (default: 'admin')
+ */
+function saveBrowserAuthState(array $state, string $name = 'admin'): bool
+{
+    return getAuthStateManager()->saveState($state, $name);
+}
+
+/**
+ * Load previously saved browser authentication state.
+ *
+ * @param string $name The name of the state (default: 'admin')
+ * @return array<string, mixed>|null The state data, or null if not found/expired
+ */
+function loadBrowserAuthState(string $name = 'admin'): ?array
+{
+    return getAuthStateManager()->loadState($name);
+}
+
+/**
+ * Clear stored browser authentication state.
+ *
+ * @param string $name The name of the state to clear (default: 'admin')
+ */
+function clearBrowserAuthState(string $name = 'admin'): bool
+{
+    return getAuthStateManager()->deleteState($name);
+}
+
+/**
+ * Clear all stored browser authentication states.
+ */
+function clearAllBrowserAuthStates(): void
+{
+    getAuthStateManager()->clearAllStates();
+}
+
+/**
+ * Get information about stored auth state.
+ *
+ * @param string $name The name of the state (default: 'admin')
+ * @return array{exists: bool, created_at: int|null, expires_at: int|null, is_expired: bool, file_path: string}
+ */
+function getBrowserAuthStateInfo(string $name = 'admin'): array
+{
+    return getAuthStateManager()->getStateInfo($name);
+}
+
+/**
+ * Create a browser state structure from cookies.
+ *
+ * This is useful for manually creating state from WordPress cookies.
+ *
+ * @param string $baseUrl The WordPress site URL
+ * @param array<string, string> $cookies WordPress cookies
+ * @param array<string, mixed> $localStorage Optional localStorage data
+ * @return array{cookies: array<int, array{name: string, value: string, domain: string, path: string, expires: int, httpOnly: bool, secure: bool, sameSite: string}>, origins: array<int, array{origin: string, localStorage: array<int, array{name: string, value: string}>}>}
+ */
+function createBrowserState(string $baseUrl, array $cookies, array $localStorage = []): array
+{
+    $manager = getAuthStateManager();
+    $formattedCookies = $manager->formatCookiesForBrowser($baseUrl, $cookies);
+
+    return $manager->createBrowserState($formattedCookies, $localStorage, $baseUrl);
 }

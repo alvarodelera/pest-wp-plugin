@@ -1,0 +1,144 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use PestWP\Commands\ServeCommand;
+
+// Autoload dependencies
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require __DIR__ . '/../vendor/autoload.php';
+} elseif (file_exists(__DIR__ . '/../../../autoload.php')) {
+    require __DIR__ . '/../../../autoload.php';
+} else {
+    fwrite(STDERR, "Error: Unable to find Composer autoloader.\n");
+    exit(1);
+}
+
+// Command help
+$help = <<<'HELP'
+PestWP WordPress Development Server
+====================================
+
+Starts a temporary WordPress instance for browser testing using PHP's
+built-in web server. Uses the WordPress installation from .pest/wordpress/.
+
+Usage:
+  pest-wp-serve [options]
+
+Options:
+  --host=<host>       Host to bind (default: localhost)
+  --port=<port>       Port to bind (default: 8080)
+  --find-port         Automatically find an available port
+  --no-install        Don't auto-install WordPress if missing
+  --generate-env      Generate .env.testing file with credentials
+  --help              Display this help message
+
+Examples:
+  pest-wp-serve
+  pest-wp-serve --port=8888
+  pest-wp-serve --find-port --generate-env
+  pest-wp-serve --host=0.0.0.0 --port=8080
+
+Default Credentials:
+  Admin User:     admin
+  Admin Password: password
+  Admin Email:    admin@example.org
+
+The server will serve WordPress from .pest/wordpress/ directory.
+If WordPress is not installed, it will be downloaded automatically.
+
+Press Ctrl+C to stop the server.
+
+HELP;
+
+// Parse arguments
+$options = getopt('', [
+    'host::',
+    'port::',
+    'find-port',
+    'no-install',
+    'generate-env',
+    'help',
+]);
+
+if (isset($options['help'])) {
+    echo $help . PHP_EOL;
+    exit(0);
+}
+
+// Set configuration
+$host = $options['host'] ?? 'localhost';
+$port = isset($options['port']) ? (int) $options['port'] : 8080;
+$autoInstall = ! isset($options['no-install']);
+$findPort = isset($options['find-port']);
+$generateEnv = isset($options['generate-env']);
+
+try {
+    $command = new ServeCommand(null, $host, $port);
+
+    // Find available port if requested
+    if ($findPort) {
+        $port = $command->findAvailablePort();
+        echo "Found available port: {$port}\n";
+    }
+
+    // Check if port is available
+    if (! $command->isPortAvailable()) {
+        fwrite(STDERR, "Error: Port {$port} is already in use.\n");
+        fwrite(STDERR, "Use --find-port to automatically find an available port.\n");
+        exit(1);
+    }
+
+    // Ensure WordPress is installed
+    if ($autoInstall) {
+        echo "Checking WordPress installation...\n";
+        $command->ensureInstalled(function (string $message): void {
+            echo "  → {$message}\n";
+        });
+    }
+
+    if (! $command->isReady()) {
+        fwrite(STDERR, "Error: WordPress is not installed. Run without --no-install first.\n");
+        exit(1);
+    }
+
+    // Generate .env.testing file if requested
+    if ($generateEnv) {
+        $envPath = $command->generateEnvFile();
+        echo "Generated: {$envPath}\n";
+    }
+
+    // Get server info
+    $status = $command->getStatus();
+    $serverInfo = $command->getServerCommand();
+
+    echo "\n";
+    echo "╔══════════════════════════════════════════════════════════════╗\n";
+    echo "║                    PestWP Development Server                  ║\n";
+    echo "╠══════════════════════════════════════════════════════════════╣\n";
+    echo "║                                                               ║\n";
+    printf("║  URL:      %-50s ║\n", $status['url']);
+    printf("║  WordPress: %-49s ║\n", basename($status['wordpress_path']));
+    echo "║                                                               ║\n";
+    echo "║  Credentials:                                                 ║\n";
+    printf("║    User:     %-48s ║\n", ServeCommand::DEFAULT_ADMIN_USER);
+    printf("║    Password: %-48s ║\n", ServeCommand::DEFAULT_ADMIN_PASSWORD);
+    echo "║                                                               ║\n";
+    echo "║  Press Ctrl+C to stop                                         ║\n";
+    echo "║                                                               ║\n";
+    echo "╚══════════════════════════════════════════════════════════════╝\n";
+    echo "\n";
+
+    // Start the server using passthru for real-time output
+    $cmd = $serverInfo['command'];
+    echo "Starting server...\n\n";
+
+    // Use passthru to run the server and show output
+    passthru($cmd, $exitCode);
+
+    exit($exitCode);
+} catch (Throwable $e) {
+    fwrite(STDERR, "\n✗ Error: {$e->getMessage()}\n");
+    exit(1);
+}
