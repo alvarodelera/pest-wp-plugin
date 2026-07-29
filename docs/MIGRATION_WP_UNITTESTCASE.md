@@ -691,7 +691,7 @@ echo $content;
 3. **Faster Tests**: ~3x faster with SQLite + SAVEPOINT isolation
 4. **Better Syntax**: More readable, expressive tests
 5. **Type Safety**: PHPStan level 9 compatible
-6. **Modern PHP**: Built for PHP 8.3+
+6. **Modern PHP**: Built for PHP 8.4+
 7. **Simpler CI/CD**: No database service configuration
 
 ---

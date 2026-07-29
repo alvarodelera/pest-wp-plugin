@@ -23,8 +23,8 @@
 
 ### Key Characteristics
 
-- **PHP 8.3+** required
-- **Pest v4.0+** and **PHPUnit 12+** based
+- **PHP 8.4+** required
+- **Pest v5.0+** and **PHPUnit 13+** based
 - **PHPStan Level 9** compliant
 - **PSR-12** code style with Laravel Pint
 - **MIT License**

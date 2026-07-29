@@ -15,14 +15,14 @@ use RuntimeException;
 final class SQLiteInstaller
 {
     /**
-     * GitHub repository for the SQLite integration plugin.
-     */
-    private const SQLITE_PLUGIN_REPO = 'WordPress/sqlite-database-integration';
-
-    /**
      * GitHub API URL for releases.
      */
     private const RELEASES_API_URL = 'https://api.github.com/repos/WordPress/sqlite-database-integration/releases/latest';
+
+    /**
+     * Stable fallback for releases whose API response cannot be read.
+     */
+    private const RELEASE_ASSET_URL = 'https://github.com/WordPress/sqlite-database-integration/releases/latest/download/plugin-sqlite-database-integration.zip';
 
     private string $wpPath;
 
@@ -101,8 +101,8 @@ final class SQLiteInstaller
         // Get the latest release URL
         $releaseUrl = $this->getLatestReleaseUrl();
         if ($releaseUrl === null) {
-            // Fall back to downloading from main branch
-            $releaseUrl = 'https://github.com/' . self::SQLITE_PLUGIN_REPO . '/archive/refs/heads/main.zip';
+            // The repository is a monorepo; its source archive is not the installable plugin.
+            $releaseUrl = self::RELEASE_ASSET_URL;
         }
 
         $zipPath = $this->pestPath . DIRECTORY_SEPARATOR . 'sqlite-plugin.zip';
@@ -133,13 +133,22 @@ final class SQLiteInstaller
             return null;
         }
 
-        /** @var array{zipball_url?: string}|false $data */
+        /** @var array{assets?: array<int, array{name?: string, browser_download_url?: string}>}|false $data */
         $data = json_decode($response, true);
-        if (! is_array($data) || ! isset($data['zipball_url'])) {
+        if (! is_array($data) || ! isset($data['assets']) || ! is_array($data['assets'])) {
             return null;
         }
 
-        return $data['zipball_url'];
+        foreach ($data['assets'] as $asset) {
+            if (
+                isset($asset['name'], $asset['browser_download_url'])
+                && $asset['name'] === 'plugin-sqlite-database-integration.zip'
+            ) {
+                return $asset['browser_download_url'];
+            }
+        }
+
+        return null;
     }
 
     /**

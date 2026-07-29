@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 /**
  * Base test case for WordPress tests.
  *
- * This class provides the bridge between Pest/PHPUnit 12 and the WordPress
+ * This class provides the bridge between Pest/PHPUnit 13 and the WordPress
  * test suite. It handles the compatibility layer and provides factory methods
  * for creating WordPress objects.
  *

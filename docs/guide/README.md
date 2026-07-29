@@ -60,8 +60,8 @@ it('filters content correctly', function () {
 
 ## Requirements
 
-- PHP 8.3+
-- Pest PHP 4.0+
+- PHP 8.4+
+- Pest PHP 5.0+
 - WordPress 6.0+ (for testing)
 
 ## Getting Started

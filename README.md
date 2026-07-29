@@ -8,7 +8,7 @@ A modern testing plugin for WordPress using Pest PHP with SQLite database suppor
 
 ## Features
 
-- 🚀 **Modern Testing**: Built on Pest v4 and PHPUnit 12
+- 🚀 **Modern Testing**: Built on Pest v5 and PHPUnit 13
 - 🗄️ **SQLite Integration**: Automatic SQLite database setup for fast, isolated tests
 - 🔄 **Database Isolation**: Automatic database state management between tests using SAVEPOINT/ROLLBACK
 - 🏭 **Type-Safe Factories**: Strongly-typed helper functions for creating WordPress objects
@@ -17,7 +17,7 @@ A modern testing plugin for WordPress using Pest PHP with SQLite database suppor
 
 ## Requirements
 
-- PHP 8.3 or higher
+- PHP 8.4 or higher
 - Composer
 
 ## Installation
@@ -1103,7 +1103,7 @@ For a complete workflow with code quality checks, matrix testing, and browser te
 ```
 
 This includes:
-- ✅ Matrix testing (PHP 8.3, 8.4)
+- ✅ Matrix testing (PHP 8.4)
 - ✅ PHPStan static analysis
 - ✅ Code style checks (Pint)
 - ✅ WordPress caching for faster builds

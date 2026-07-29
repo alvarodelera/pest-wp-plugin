@@ -539,7 +539,7 @@ PestWP with SQLite should be faster than wp-browser with MySQL. If tests are slo
 3. **Simpler CI/CD**: No database services required
 4. **Better Syntax**: Pest's expressive, readable syntax
 5. **Type Safety**: PHPStan level 9 compatible helpers
-6. **Modern PHP**: Built for PHP 8.3+
+6. **Modern PHP**: Built for PHP 8.4+
 
 ---
 

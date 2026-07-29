@@ -4,9 +4,9 @@ This guide will walk you through installing PestWP in your WordPress plugin or t
 
 ## Requirements
 
-- **PHP 8.3** or higher
+- **PHP 8.4** or higher
 - **Composer** for dependency management
-- **Pest PHP 4.0** or higher
+- **Pest PHP 5.0** or higher
 
 ## Install via Composer
 
